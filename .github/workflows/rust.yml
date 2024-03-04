@@ -29,7 +29,9 @@ jobs:
           ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-
           ${{ runner.os }}-cargo-
     - name: Install protoc
-      run: sudo apt install -y protobuf-compiler
+      run: |
+        sudo apt install -y protobuf-compiler
+        protoc --version
     - name: Build
       run: |
         cargo install cargo-component@0.7.1
