@@ -28,10 +28,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-
           ${{ runner.os }}-cargo-
-    - name: Install protoc
-      run: |
-        sudo apt install -y protobuf-compiler
-        protoc --version
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v3
+      with:
+        version: "25.3"
     - name: Build
       run: |
         cargo install cargo-component@0.7.1
