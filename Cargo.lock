@@ -1919,7 +1919,6 @@ dependencies = [
  "pulumi_rust",
  "tokio",
  "tonic",
- "wit-bindgen",
 ]
 
 [[package]]

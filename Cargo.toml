@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wit-bindgen = { version = "0.17.0", default-features = false, features = ["realloc"] }
 pulumi_rust = { path = "pulumi_rust" }
 tokio = { version = "1.36.0", features = ["sync", "macros", "io-util", "rt", "time"] }
 futures = "0.3.30"
