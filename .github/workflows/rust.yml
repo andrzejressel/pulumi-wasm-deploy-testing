@@ -34,7 +34,7 @@ jobs:
         version: "25.3"
     - name: Build
       run: |
-        cargo install cargo-component@0.7.1
+        cargo install cargo-component@0.8.0 --locked
         cargo build --verbose
         cargo component build -p pulumi_wasm --verbose
         cargo component build -p pulumi_wasm_random --verbose
