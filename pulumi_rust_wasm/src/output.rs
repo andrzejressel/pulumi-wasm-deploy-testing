@@ -1,9 +1,6 @@
-// use crate::pulumi::Pulumi;
-use std::future::IntoFuture;
 use std::marker::PhantomData;
-use std::rc::Rc;
-use uuid::Uuid;
 use crate::bindings::component::pulumi_wasm::output_interface;
+use uuid::Uuid;
 
 pub struct Output<T> {
     phantom: PhantomData<T>,
@@ -24,10 +21,10 @@ impl<T> Output<T> {
     }
 
     pub fn map<B, F>(&self, f: F) -> Output<B>
-        where
-            F: Fn(T) -> B + Send + 'static,
-            T: serde::de::DeserializeOwned,
-            B: serde::Serialize,
+    where
+        F: Fn(T) -> B + Send + 'static,
+        T: serde::de::DeserializeOwned,
+        B: serde::Serialize,
     {
         let f = move |arg: Vec<u8>| {
             let arg = arg.clone();

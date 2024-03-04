@@ -1,20 +1,19 @@
 use core::fmt::Debug;
 use std::collections::BTreeMap;
 use std::fmt::Formatter;
-use std::future::Future;
 use std::ops::Deref;
-
-use futures::FutureExt;
 use prost::Message;
 
-use crate::bindings::exports::component::pulumi_wasm::{function_reverse_callback, output_interface, register_interface};
-use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{FunctionInvocationRequest, FunctionInvocationResult};
-use crate::bindings::exports::component::pulumi_wasm::output_interface::{
-    Guest, GuestOutput, OwnOutput,
+use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{
+    FunctionInvocationRequest, FunctionInvocationResult,
 };
+use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput, OwnOutput};
 use crate::bindings::exports::component::pulumi_wasm::register_interface::RegisterResourceRequest;
-use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
+use crate::bindings::exports::component::pulumi_wasm::{
+    function_reverse_callback, output_interface, register_interface,
+};
 use crate::output::OutputContent::Done;
+use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
 
 mod bindings;
 mod grpc;
@@ -23,10 +22,10 @@ mod output;
 struct Component;
 
 impl output_interface::Guest for Component {
-    fn create_struct(fields: Vec<(String, &Output)>) -> OwnOutput {
+    fn create_struct(_fields: Vec<(String, &Output)>) -> OwnOutput {
         //FIXME
         let cell = output::create_nothing();
-        return OwnOutput::new(Output { output: cell });
+        OwnOutput::new(Output { output: cell })
         // todo!()
         // let mut field_names = vec![];
         // let mut field_values = vec![];
@@ -77,7 +76,7 @@ pub struct Output {
 }
 
 impl Debug for Output {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
@@ -86,14 +85,14 @@ impl GuestOutput for Output {
     fn new(value: Vec<u8>) -> Self {
         let value = rmpv::decode::read_value(&mut value.as_slice()).unwrap();
         let cell = output::create_new(value);
-        return Output { output: cell };
+        Output { output: cell }
     }
 
     fn map(&self, function_name: String) -> OwnOutput {
         let function_id = FunctionId(function_name);
         let function_source = FunctionSource("source".to_string());
         let output = output::map_external(function_id, function_source, self.output.clone());
-        return OwnOutput::new(Output { output });
+        OwnOutput::new(Output { output })
     }
 
     fn get(&self) -> Option<Vec<u8>> {
@@ -106,7 +105,9 @@ impl GuestOutput for Output {
                 rmpv::encode::write_value(&mut vec, v).unwrap();
                 Some(vec)
             }
-            OutputContent::Mapped(_, _, _) | OutputContent::Func(_, _) | OutputContent::Nothing => None
+            OutputContent::Mapped(_, _, _) | OutputContent::Func(_, _) | OutputContent::Nothing => {
+                None
+            }
         }
     }
     // fn new(value: Vec<u8>) -> Self {
@@ -164,37 +165,42 @@ impl GuestOutput for Output {
 
 impl function_reverse_callback::Guest for Component {
     fn get_functions(source: String) -> Vec<FunctionInvocationRequest> {
-        access_map().iter().flat_map(|f| {
-            let f1 = &*f.borrow();
+        access_map()
+            .iter()
+            .flat_map(|f| {
+                let f1 = &*f.borrow();
 
-            match f1 {
-                OutputContent::Mapped(id, s, prev) if s == &FunctionSource(source.clone()) => {
-                    match &*prev.borrow() {
-                        OutputContent::Done(v) => {
-                            println!("DONE");
-                            let mut vec = vec![];
-                            rmpv::encode::write_value(&mut vec, v).unwrap();
-                            Some(FunctionInvocationRequest {
-                                id: OwnOutput::new(Output {
-                                    output: f.clone(),
-                                }),
-                                function_id: id.0.clone(),
-                                value: vec,
-                            })
+                match f1 {
+                    OutputContent::Mapped(id, s, prev) if s == &FunctionSource(source.clone()) => {
+                        match &*prev.borrow() {
+                            OutputContent::Done(v) => {
+                                println!("DONE");
+                                let mut vec = vec![];
+                                rmpv::encode::write_value(&mut vec, v).unwrap();
+                                Some(FunctionInvocationRequest {
+                                    id: OwnOutput::new(Output { output: f.clone() }),
+                                    function_id: id.0.clone(),
+                                    value: vec,
+                                })
+                            }
+                            OutputContent::Mapped(_, _, _)
+                            | OutputContent::Func(_, _)
+                            | OutputContent::Nothing => None,
                         }
-                        OutputContent::Mapped(_, _, _) | OutputContent::Func(_, _) | OutputContent::Nothing => None,
                     }
+                    OutputContent::Mapped(_, _, _)
+                    | OutputContent::Func(_, _)
+                    | OutputContent::Done(_)
+                    | OutputContent::Nothing => None,
                 }
-                OutputContent::Mapped(_, _, _) | OutputContent::Func(_, _) | OutputContent::Done(_) | OutputContent::Nothing => None,
-            }
-        }).collect()
+            })
+            .collect()
     }
 
     fn set_functions(results: Vec<FunctionInvocationResult>) {
-        use std::borrow::BorrowMut;
         for x in results {
             let value = rmpv::decode::read_value(&mut x.value.as_slice()).unwrap();
-            let mut borrowed = (&x.id.output);
+            let borrowed = &x.id.output;
             borrowed.replace(Done(value));
         }
     }
@@ -254,6 +260,8 @@ impl register_interface::Guest for Component {
 
         let vec_request = request.encode_to_vec();
 
-        crate::bindings::component::pulumi_wasm::external_world::register_resource(vec_request.as_slice());
+        crate::bindings::component::pulumi_wasm::external_world::register_resource(
+            vec_request.as_slice(),
+        );
     }
 }

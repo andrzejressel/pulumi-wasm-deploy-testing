@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
-use anyhow::Error;
 use lazy_static::lazy_static;
 // use crate::bindings::exports::component::pulumi_wasm::function_holder::Guest;
 
@@ -15,9 +14,7 @@ lazy_static! {
     };
 }
 
-struct Component {
-
-}
+struct Component {}
 
 // impl Guest for Component {
 //     fn invoke_function(function_name: String, arg: Vec<u8>) -> Vec<u8> {

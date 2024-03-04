@@ -4,13 +4,12 @@ use crate::pulumi::server::Main;
 use anyhow::Error;
 use prost::Message;
 use std::cell::RefCell;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::fs::OpenOptions;
-use std::ops::{Deref, DerefMut};
+use std::ops::DerefMut;
 use std::rc::Rc;
 use tonic::async_trait;
-use uuid::Uuid;
-use wasmtime::component::{Component, Instance, Linker, ResourceAny, ResourceTable};
+use wasmtime::component::{Component, Instance, Linker, ResourceTable};
 use wasmtime::Store;
 use wasmtime_wasi::preview2::{WasiCtx, WasiCtxBuilder, WasiView};
 
@@ -43,17 +42,14 @@ struct MyState {
 #[async_trait]
 impl server::component::pulumi_wasm::external_world::Host for MyState {
     async fn register_resource(&mut self, request: Vec<u8>) -> wasmtime::Result<Vec<u8>> {
-        use futures::executor;
-        let result = self.register_async(request).await?;
+        let _result = self.register_async(request).await?;
         // executor::block_on(result)?;
         Ok(vec![])
         // run_blocking(self.register_async(request))
     }
-
 }
 
 impl MyState {
-
     async fn register_async(&mut self, request: Vec<u8>) -> wasmtime::Result<()> {
         use prost::Message;
         let engine_url = self
@@ -79,7 +75,6 @@ impl MyState {
 
         Ok(())
     }
-
 }
 
 impl WasiView for SimplePluginCtx {
@@ -160,18 +155,15 @@ impl Pulumi {
     pub async fn start(&self) -> Result<(), Error> {
         let mut binding = self.store.borrow_mut();
         let store = binding.deref_mut();
-        self
-            .plugin
+        self.plugin
             .component_pulumi_wasm_pulumi_main()
-            .call_main(store).await?;
+            .call_main(store)
+            .await?;
 
         Ok(())
 
-
         // self.plugin
         //     .component_pulumi_wasm_pulumi_interface()
-
-
     }
 
     // pub async fn test(&self) -> Result<(), Error> {

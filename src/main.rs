@@ -1,8 +1,7 @@
 use anyhow::Error;
-use log::{debug, error, info, log, warn};
+use log::{error, info, warn};
 use pulumi_rust::pulumi::Pulumi;
-use std::fmt::format;
-use std::time::Duration;
+
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -18,7 +17,7 @@ async fn main() -> Result<(), Error> {
 
     println!("Hello, world!");
 
-    let pulumi_engine_url = std::env::var("PULUMI_ENGINE")?;
+    let _pulumi_engine_url = std::env::var("PULUMI_ENGINE")?;
     let pulumi_monitor_url = std::env::var("PULUMI_MONITOR")?;
     // println!("{pulumi_engine_url}");
 
@@ -39,12 +38,9 @@ async fn main() -> Result<(), Error> {
 
     // Err(anyhow::Error::msg("TEST"))?;
 
-    let pulumi = Pulumi::create(
-        &*args.wasm,
-        &Some(pulumi_monitor_url),
-    ).await?;
+    let pulumi = Pulumi::create(&args.wasm, &Some(pulumi_monitor_url)).await?;
 
-    (&pulumi).start().await?;
+    pulumi.start().await?;
 
     // tokio::time::sleep(Duration::from_secs(1)).await;
 
