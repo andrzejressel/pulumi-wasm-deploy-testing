@@ -3,16 +3,17 @@ use std::collections::BTreeMap;
 use std::fmt::Formatter;
 use std::ops::Deref;
 use prost::Message;
+use rmpv::Value;
+use bindings::component::pulumi_wasm::external_world;
 
 use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{
     FunctionInvocationRequest, FunctionInvocationResult,
 };
 use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput, OwnOutput};
-use crate::bindings::exports::component::pulumi_wasm::register_interface::RegisterResourceRequest;
+use crate::bindings::exports::component::pulumi_wasm::register_interface::{ObjectField, RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::{
     function_reverse_callback, output_interface, register_interface,
 };
-use crate::output::OutputContent::Done;
 use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
 
 mod bindings;
@@ -25,7 +26,7 @@ impl output_interface::Guest for Component {
     fn create_struct(_fields: Vec<(String, &Output)>) -> OwnOutput {
         //FIXME
         let cell = output::create_nothing();
-        OwnOutput::new(Output { output: cell })
+        OwnOutput::new(Output { output: cell, tags: vec![] })
         // todo!()
         // let mut field_names = vec![];
         // let mut field_values = vec![];
@@ -72,12 +73,12 @@ impl output_interface::Guest for Component {
 
 pub struct Output {
     output: output::OutputContentRefCell,
-    // output: OutputWrapper,
+    tags: Vec<String>,
 }
 
 impl Debug for Output {
     fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        std::fmt::Result::Ok(()) // TODO: Implement Debug for Output
     }
 }
 
@@ -85,14 +86,14 @@ impl GuestOutput for Output {
     fn new(value: Vec<u8>) -> Self {
         let value = rmpv::decode::read_value(&mut value.as_slice()).unwrap();
         let cell = output::create_new(value);
-        Output { output: cell }
+        Output { output: cell, tags: vec![] }
     }
 
     fn map(&self, function_name: String) -> OwnOutput {
-        let function_id = FunctionId(function_name);
-        let function_source = FunctionSource("source".to_string());
+        let function_id = FunctionId::from_string(&function_name);
+        let function_source = FunctionSource::from_str("source");
         let output = output::map_external(function_id, function_source, self.output.clone());
-        OwnOutput::new(Output { output })
+        OwnOutput::new(Output { output, tags: vec![] })
     }
 
     fn get(&self) -> Option<Vec<u8>> {
@@ -109,6 +110,14 @@ impl GuestOutput for Output {
                 None
             }
         }
+    }
+
+    fn duplicate(&self) -> OwnOutput {
+        OwnOutput::new(Output {
+            output: self.output.clone(),
+            tags: self.tags.clone(),
+        })
+        // self.output
     }
     // fn new(value: Vec<u8>) -> Self {
     // let value = rmpv::decode::read_value(&mut value.as_slice()).unwrap();
@@ -165,21 +174,21 @@ impl GuestOutput for Output {
 
 impl function_reverse_callback::Guest for Component {
     fn get_functions(source: String) -> Vec<FunctionInvocationRequest> {
+        let function_source = &FunctionSource::from_string(&source);
         access_map()
             .iter()
             .flat_map(|f| {
                 let f1 = &*f.borrow();
 
                 match f1 {
-                    OutputContent::Mapped(id, s, prev) if s == &FunctionSource(source.clone()) => {
+                    OutputContent::Mapped(id, s, prev) if s == function_source => {
                         match &*prev.borrow() {
                             OutputContent::Done(v) => {
-                                println!("DONE");
                                 let mut vec = vec![];
                                 rmpv::encode::write_value(&mut vec, v).unwrap();
                                 Some(FunctionInvocationRequest {
-                                    id: OwnOutput::new(Output { output: f.clone() }),
-                                    function_id: id.0.clone(),
+                                    id: OwnOutput::new(Output { output: f.clone(), tags: vec![] }),
+                                    function_id: id.get(),
                                     value: vec,
                                 })
                             }
@@ -201,28 +210,43 @@ impl function_reverse_callback::Guest for Component {
         for x in results {
             let value = rmpv::decode::read_value(&mut x.value.as_slice()).unwrap();
             let borrowed = &x.id.output;
-            borrowed.replace(Done(value));
+            borrowed.replace(OutputContent::Done(value));
         }
+    }
+}
+
+fn messagepack_to_protoc(v: &Value) -> prost_types::Value {
+    match v {
+        Value::Integer(i) => prost_types::Value {
+            kind: Option::from(prost_types::value::Kind::NumberValue(i.as_f64().unwrap())),
+        },
+        _ => todo!()
     }
 }
 
 impl register_interface::Guest for Component {
     fn register(request: RegisterResourceRequest) {
+
+        let pairs = request.object_names.iter().zip(request.object.iter());
+
+        let pairs= pairs.map(|(name, object )| {
+            let s: String = "length".to_string();
+            // let s: String = String::from_utf8(name.clone()).unwrap();
+
+            let v = match &*object.object.output.borrow() {
+                OutputContent::Done(vec) => messagepack_to_protoc(vec),
+                OutputContent::Mapped(_, _, _) => todo!(),
+                OutputContent::Func(_, _) => todo!(),
+                OutputContent::Nothing => todo!()
+            };
+
+            (s, v)
+        });
+
+
+
         let object = prost_types::Struct {
-            fields: BTreeMap::from([
-                (
-                    "length".to_string(),
-                    prost_types::Value {
-                        kind: Option::from(prost_types::value::Kind::NumberValue(10.into())),
-                    },
-                ),
-                (
-                    "minNumeric".to_string(),
-                    prost_types::Value {
-                        kind: Option::from(prost_types::value::Kind::NumberValue(5.into())),
-                    },
-                ),
-            ]),
+            fields: BTreeMap::from_iter(pairs)
         };
 
         let request = grpc::RegisterResourceRequest {
@@ -260,8 +284,6 @@ impl register_interface::Guest for Component {
 
         let vec_request = request.encode_to_vec();
 
-        crate::bindings::component::pulumi_wasm::external_world::register_resource(
-            vec_request.as_slice(),
-        );
+        external_world::register_resource(vec_request.as_slice());
     }
 }

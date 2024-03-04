@@ -5,9 +5,37 @@ use std::rc::Rc;
 pub(crate) type OutputContentRefCell = Rc<RefCell<OutputContent>>;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct FunctionId(pub(crate) String);
+pub(crate) struct FunctionId(String);
+
+impl FunctionId {
+    pub(crate) fn from_string(s: &String) -> FunctionId {
+        FunctionId(s.to_string())
+    }
+    pub(crate) fn from_str(s: &str) -> FunctionId {
+        FunctionId(s.to_string())
+    }
+    pub(crate) fn get(&self) -> String {
+        self.0.clone()
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct FunctionSource(pub(crate) String);
+pub(crate) struct FunctionSource(String);
+
+impl Into<String> for FunctionSource {
+    fn into(self) -> String {
+        self.0
+    }
+}
+
+impl FunctionSource {
+    pub(crate) fn from_string(s: &String) -> FunctionSource {
+        FunctionSource(s.to_string())
+    }
+    pub(crate) fn from_str(s: &str) -> FunctionSource {
+        FunctionSource(s.to_string())
+    }
+}
 
 static mut GLOBAL_MAP: Option<Vec<OutputContentRefCell>> = None;
 
@@ -72,8 +100,8 @@ pub(crate) fn map_external(
 }
 
 pub(crate) fn map_internal<F>(ref_cell: OutputContentRefCell, f: F) -> Rc<RefCell<OutputContent>>
-where
-    F: Fn(Vec<u8>) -> Vec<u8> + 'static,
+    where
+        F: Fn(Vec<u8>) -> Vec<u8> + 'static,
 {
     create_wrapper(OutputContent::Func(ref_cell, Box::new(f)))
 }

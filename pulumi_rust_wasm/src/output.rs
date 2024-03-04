@@ -8,7 +8,14 @@ pub struct Output<T> {
     // pulumi: Rc<Pulumi>,
 }
 
+
+
 impl<T> Output<T> {
+
+    pub fn get_inner(&self) -> &output_interface::Output {
+        &self.future
+    }
+
     pub fn new<F: serde::Serialize>(value: &F) -> Self {
         let binding = rmp_serde::to_vec(value).unwrap();
         let arg = binding.as_slice();

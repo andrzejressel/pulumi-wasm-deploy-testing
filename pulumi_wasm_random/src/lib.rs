@@ -1,7 +1,5 @@
 use crate::bindings::component::pulumi_wasm::output_interface::create_struct;
-use crate::bindings::component::pulumi_wasm::register_interface::{
-    register, RegisterResourceRequest,
-};
+use crate::bindings::component::pulumi_wasm::register_interface::{ObjectField, register, RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::pulumi_provider_random_interface::{
     Guest, Output, RandomStringArgs,
 };
@@ -23,12 +21,18 @@ impl Guest for Component {
             Err(output) => output,
         };
 
-        let object = create_struct(vec![("length".to_string(), length)].as_slice());
+        // let object = vec![
+        //     ObjectField {
+        //         name: "length".to_string().into_bytes(),
+        //         object: length,
+        //     }
+        // ];
 
         let request = RegisterResourceRequest {
             type_: r#type,
             name: args.name,
-            object: &object,
+            object_names: vec!["length".to_string()],
+            object: vec![ObjectField { object: length }],
         };
 
         register(request);
