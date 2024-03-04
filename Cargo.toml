@@ -1,0 +1,28 @@
+[package]
+name = "pulumi-wasm-parent"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wit-bindgen = { version = "0.17.0", default-features = false, features = ["realloc"] }
+pulumi_rust = { path = "pulumi_rust" }
+tokio = { version = "1.36.0", features = ["sync", "macros", "io-util", "rt", "time"] }
+futures = "0.3.30"
+log = "0.4"
+anyhow = "1.0.79"
+tonic = "0.11.0"
+object = "0.32.2"
+prost-types = "0.12.3"
+clap = { version = "4.5.1", features = ["derive"] }
+
+[workspace]
+
+members = [
+    "pulumi_rust",
+    "pulumi_wasm",
+    "pulumi_wasm_random",
+    "pulumi_wasm_main",
+    "pulumi_rust_wasm",
+]

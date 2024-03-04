@@ -1,0 +1,25 @@
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+
+
+# Added by cargo
+
+/target
+
+.obsidian
+
+/composed1.wat
+/composed2.wat
+/my-file
+/pulumi-language-wasm/language-host.exe
+
+.idea/

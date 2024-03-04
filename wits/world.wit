@@ -1,0 +1,117 @@
+package component:pulumi-wasm@0.1.0;
+
+world pulumi-entrypoint {
+    export pulumi-main;
+    import external-world;
+//    import function-holder;
+//    export function-holder;
+}
+
+world pulumi-wasm {
+    export output-interface;
+    export register-interface;
+    export function-reverse-callback;
+
+   // import function-holder;
+    import external-world;
+}
+
+world main {
+    export pulumi-main;
+    import external-world;
+}
+
+world new-main {
+    import pulumi-provider-random-interface;
+    export pulumi-main;
+}
+
+world pulumi-provider-random {
+    import output-interface;
+    import register-interface;
+
+    export pulumi-provider-random-interface;
+}
+
+world pulumi-rust {
+    import output-interface;
+
+//    export function-holder;
+}
+
+interface output-interface {
+
+    create-struct: func(fields: list<tuple<string, borrow<output>>>) -> output;
+
+    resource output {
+        constructor(value: list<u8>);
+        map: func(function-name: string) -> output;
+        get: func() -> option<list<u8>>;
+    }
+}
+
+interface register-interface {
+    use output-interface.{output};
+
+    record register-resource-request {
+        %type: string,
+        name: string,
+        object: borrow<output>
+    }
+
+    register: func(request: register-resource-request);
+}
+
+interface external-world {
+    register-resource: func(request: list<u8>) -> list<u8>;
+}
+
+interface pulumi-provider-random-interface {
+
+    use output-interface.{output};
+
+    variant either-u32 {
+        literal(option<u32>),
+        res(option<borrow<output>>),
+    }
+
+    record random-string-args {
+        name: string,
+        length: result<u32, borrow<output>>,
+    }
+
+    record random-string-result {
+        url: output,
+        %result: output
+    }
+
+   // create-random-string: func(args: random-string-args) -> random-string-result;
+    create-random-string: func(args: random-string-args);
+
+    handle-functions: func();
+}
+
+interface pulumi-main {
+    main: func();
+}
+
+//interface function-holder {
+//    invoke-function: func(function-name: string, arg: list<u8>) -> list<u8>;
+//}
+
+interface function-reverse-callback {
+
+    use output-interface.{output};
+
+    record function-invocation-request {
+        id: output,
+        function-id: string,
+        value: list<u8>,
+    }
+    record function-invocation-result {
+        id: borrow<output>,
+        value: list<u8>,
+    }
+    get-functions: func(source: string) -> list<function-invocation-request>;
+    set-functions: func(results: list<function-invocation-result>);
+}

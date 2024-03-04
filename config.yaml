@@ -1,0 +1,28 @@
+#import-components: true
+search-paths:
+  - target/wasm32-wasi/debug
+
+#dependencies:
+#  "component:pulumi-wasm/pulumi-provider-random-interface@0.1.0": "target/wasm32-wasi/debug/pulumi_wasm_random.wasm"
+#  "component:pulumi-wasm/pulumi-interface@0.1.0": "target/wasm32-wasi/debug/pulumi_wasm.wasm"
+
+
+definitions:
+  - "target/wasm32-wasi/debug/pulumi-wasm-random.wasm"
+  - "target/wasm32-wasi/debug/pulumi-wasm.wasm"
+
+instantiations:
+  root:
+    arguments:
+#      component:pulumi-wasm/pulumi-provider-random-interface@0.1.0:
+#        instance: "pulumi-wasm-main"
+      component:pulumi-wasm/function-holder@0.1.0:
+        instance: "pulumi-wasm-main"
+        export: component:pulumi-wasm/function-holder@0.1.0
+#  root:
+#    arguments:
+#      component:pulumi-wasm/pulumi-provider-random-interface@0.1.0:
+#        instance: "pulumi-wasm-random"
+
+#dependencies:
+#  pulumi-wasm/output-interface@0.1.0: pulumi_wasm

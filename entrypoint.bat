@@ -1,0 +1,1 @@
+.\run.bat && cargo run -- --wasm target/wasm32-wasi/debug/composed2.wasm
