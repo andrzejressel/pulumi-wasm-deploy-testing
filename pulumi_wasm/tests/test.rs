@@ -48,19 +48,11 @@ impl server::component::pulumi_wasm::external_world::Host for MyState {
 }
 
 impl WasiView for SimplePluginCtx {
-    fn table(&self) -> &ResourceTable {
-        &self.table
-    }
-
-    fn table_mut(&mut self) -> &mut ResourceTable {
+    fn table(&mut self) -> &mut ResourceTable {
         &mut self.table
     }
 
-    fn ctx(&self) -> &WasiCtx {
-        &self.context
-    }
-
-    fn ctx_mut(&mut self) -> &mut WasiCtx {
+    fn ctx(&mut self) -> &mut WasiCtx {
         &mut self.context
     }
 }

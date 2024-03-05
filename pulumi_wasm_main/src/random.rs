@@ -14,13 +14,13 @@ pub fn create_random_string(
         name: args.name,
         length: &length,
     };
-    pulumi_provider_random_interface::create_random_string(args);
+    pulumi_provider_random_interface::create_random_string(&args);
 }
 
 fn clone<T>(output: Output<T>) -> output_interface::Output {
     unsafe {
         let inner = output.get_inner();
         let cloned = inner.duplicate();
-        pulumi_provider_random_interface::Output::from_handle(cloned.into_handle())
+        pulumi_provider_random_interface::Output::from_handle(cloned.take_handle())
     }
 }

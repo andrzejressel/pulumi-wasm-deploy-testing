@@ -4,6 +4,8 @@ use pulumi_rust_wasm::output::Output;
 use crate::random::*;
 
 mod bindings;
+bindings::export!(Component with_types_in bindings);
+
 mod random;
 
 struct Component {}

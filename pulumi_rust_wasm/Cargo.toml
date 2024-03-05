@@ -10,7 +10,8 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 uuid.workspace = true
-wit-bindgen.workspace = true
+bitflags.workspace = true
+wit-bindgen-rt.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 rmp-serde.workspace = true

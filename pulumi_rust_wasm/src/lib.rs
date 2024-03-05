@@ -4,6 +4,8 @@ use lazy_static::lazy_static;
 // use crate::bindings::exports::component::pulumi_wasm::function_holder::Guest;
 
 pub(crate) mod bindings;
+// bindings::export!(Component with_types_in bindings);
+
 pub mod output;
 // pub mod pulumi;
 

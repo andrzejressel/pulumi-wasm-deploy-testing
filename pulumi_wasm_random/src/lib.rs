@@ -5,6 +5,7 @@ use crate::bindings::exports::component::pulumi_wasm::pulumi_provider_random_int
 };
 
 mod bindings;
+bindings::export!(Component with_types_in bindings);
 
 struct Component {}
 
@@ -35,7 +36,7 @@ impl Guest for Component {
             object: vec![ObjectField { object: &args.length }],
         };
 
-        register(request);
+        register(&request);
     }
 
     fn handle_functions() {

@@ -9,12 +9,13 @@ use bindings::component::pulumi_wasm::external_world;
 use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{
     FunctionInvocationRequest, FunctionInvocationResult,
 };
-use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput, OwnOutput};
+use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput};
 use crate::bindings::exports::component::pulumi_wasm::register_interface::{ObjectField, RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::{
     function_reverse_callback, output_interface, register_interface,
 };
 use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
+bindings::export!(Component with_types_in bindings);
 
 mod bindings;
 mod grpc;
@@ -23,10 +24,12 @@ mod output;
 struct Component;
 
 impl output_interface::Guest for Component {
-    fn create_struct(_fields: Vec<(String, &Output)>) -> OwnOutput {
+    type Output = Output;
+
+    fn create_struct(_fields: Vec<(String, output_interface::OutputBorrow<'_>)>) -> output_interface::Output {
         //FIXME
         let cell = output::create_nothing();
-        OwnOutput::new(Output { output: cell, tags: vec![] })
+        output_interface::Output::new(Output { output: cell, tags: vec![] })
         // todo!()
         // let mut field_names = vec![];
         // let mut field_values = vec![];
@@ -89,11 +92,11 @@ impl GuestOutput for Output {
         Output { output: cell, tags: vec![] }
     }
 
-    fn map(&self, function_name: String) -> OwnOutput {
+    fn map(&self, function_name: String) -> output_interface::Output {
         let function_id = FunctionId::from_string(&function_name);
         let function_source = FunctionSource::from_str("source");
         let output = output::map_external(function_id, function_source, self.output.clone());
-        OwnOutput::new(Output { output, tags: vec![] })
+        output_interface::Output::new(Output { output, tags: vec![] })
     }
 
     fn get(&self) -> Option<Vec<u8>> {
@@ -112,8 +115,8 @@ impl GuestOutput for Output {
         }
     }
 
-    fn duplicate(&self) -> OwnOutput {
-        OwnOutput::new(Output {
+    fn duplicate(&self) -> output_interface::Output {
+        output_interface::Output::new(Output {
             output: self.output.clone(),
             tags: self.tags.clone(),
         })
@@ -187,7 +190,7 @@ impl function_reverse_callback::Guest for Component {
                                 let mut vec = vec![];
                                 rmpv::encode::write_value(&mut vec, v).unwrap();
                                 Some(FunctionInvocationRequest {
-                                    id: OwnOutput::new(Output { output: f.clone(), tags: vec![] }),
+                                    id: output_interface::Output::new(Output { output: f.clone(), tags: vec![] }),
                                     function_id: id.get(),
                                     value: vec,
                                 })
@@ -209,7 +212,7 @@ impl function_reverse_callback::Guest for Component {
     fn set_functions(results: Vec<FunctionInvocationResult>) {
         for x in results {
             let value = rmpv::decode::read_value(&mut x.value.as_slice()).unwrap();
-            let borrowed = &x.id.output;
+            let borrowed = &x.id.get::<Output>().output;
             borrowed.replace(OutputContent::Done(value));
         }
     }
@@ -233,8 +236,8 @@ impl register_interface::Guest for Component {
             let s: String = "length".to_string();
             // let s: String = String::from_utf8(name.clone()).unwrap();
 
-            let v = match &*object.object.output.borrow() {
-                OutputContent::Done(vec) => messagepack_to_protoc(vec),
+            let v = match &*object.object.get::<Output>().output.borrow() {
+                OutputContent::Done(vec) => messagepack_to_protoc(&vec),
                 OutputContent::Mapped(_, _, _) => todo!(),
                 OutputContent::Func(_, _) => todo!(),
                 OutputContent::Nothing => todo!()
