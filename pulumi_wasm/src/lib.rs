@@ -9,6 +9,8 @@ use bindings::component::pulumi_wasm::external_world;
 use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{
     FunctionInvocationRequest, FunctionInvocationResult,
 };
+use crate::bindings::exports::component::pulumi_wasm::output_interface::Output as WasmOutput;
+use crate::bindings::exports::component::pulumi_wasm::output_interface::OutputBorrow as WasmOutputBorrow;
 use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput};
 use crate::bindings::exports::component::pulumi_wasm::register_interface::{RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::{
@@ -25,53 +27,6 @@ struct Component;
 
 impl output_interface::Guest for Component {
     type Output = Output;
-
-    fn create_struct(_fields: Vec<(String, output_interface::OutputBorrow<'_>)>) -> output_interface::Output {
-        //FIXME
-        let cell = output::create_nothing();
-        output_interface::Output::new(Output { output: cell, tags: vec![] })
-        // todo!()
-        // let mut field_names = vec![];
-        // let mut field_values = vec![];
-        //
-        // for (string, output) in fields {
-        //     field_names.push(string);
-        //     field_values.push(output.output.future.clone())
-        // }
-        //
-        // let all_futures = join_all(field_values);
-        //
-        // let f = all_futures.map(move |vec_of_vecs| {
-        //     let mut map = vec![];
-        //     let mut all_known = true;
-        //
-        //     // let mut object = rmpv::Value::Map();
-        //     for (value, name) in vec_of_vecs.iter().zip(field_names.clone()) {
-        //         let name_field = Value::String(name.into());
-        //         let value_field = value.deref().clone();
-        //
-        //         match value_field {
-        //             OutputValue::Known(known) => map.push((name_field, known)),
-        //             OutputValue::Unknown() => {
-        //                 return Arc::new(OutputValue::Unknown());
-        //             }
-        //         }
-        //     }
-        //
-        //     Arc::new(OutputValue::Known(Value::Map(map)))
-        // });
-        //
-        // let f2: Pin<Box<dyn Future<Output = Arc<OutputValue>>>> = Box::pin(f);
-        //
-        // let output_wrapper = OutputWrapper {
-        //     future: f2.shared(),
-        //     tags: vec![],
-        // };
-        //
-        // OwnOutput::new(Output {
-        //     output: output_wrapper,
-        // })
-    }
 }
 
 pub struct Output {
@@ -92,11 +47,11 @@ impl GuestOutput for Output {
         Output { output: cell, tags: vec![] }
     }
 
-    fn map(&self, function_name: String) -> output_interface::Output {
+    fn map(&self, function_name: String) -> WasmOutput {
         let function_id = FunctionId::from_string(&function_name);
         let function_source = FunctionSource::from_str("source");
         let output = output::map_external(function_id, function_source, self.output.clone());
-        output_interface::Output::new(Output { output, tags: vec![] })
+        WasmOutput::new(Output { output, tags: vec![] })
     }
 
     fn get(&self) -> Option<Vec<u8>> {
@@ -115,64 +70,12 @@ impl GuestOutput for Output {
         }
     }
 
-    fn duplicate(&self) -> output_interface::Output {
-        output_interface::Output::new(Output {
+    fn duplicate(&self) -> WasmOutput {
+        WasmOutput::new(Output {
             output: self.output.clone(),
             tags: self.tags.clone(),
         })
-        // self.output
     }
-    // fn new(value: Vec<u8>) -> Self {
-    // let value = rmpv::decode::read_value(&mut value.as_slice()).unwrap();
-    // let output = create_output(value);
-    // return Self { output };
-    // }
-    //
-    // fn map(&self, function_name: String) -> OwnOutput {
-    //     let future = self.output.future.clone();
-    //
-    //     let new_future = map_to_future(future.map(move |f| {
-    //         let f = f.deref();
-    //         Arc::new(match f {
-    //             OutputValue::Known(v) => {
-    //                 let mut vec = vec![];
-    //                 rmpv::encode::write_value(&mut vec, v).unwrap();
-    //                 let mut vec = invoke_function(
-    //                     function_name.as_str(),
-    //                     &*vec,
-    //                 );
-    //                 let value = rmpv::decode::read_value(&mut vec.as_slice()).unwrap();
-    //                 OutputValue::Known(value)
-    //             }
-    //             OutputValue::Unknown() => OutputValue::Unknown(),
-    //         })
-    //     }))
-    //     .shared();
-    //
-    //     let new_output = OutputWrapper {
-    //         future: new_future,
-    //         tags: self.output.tags.clone(),
-    //     };
-    //
-    //     OwnOutput::new(Output { output: new_output })
-    // }
-    //
-    // fn get(&self) -> Option<Vec<u8>> {
-    //     let future = self.output.future.clone();
-    //
-    //     let result = block_on(future);
-    //
-    //     let result = &*result;
-    //
-    //     match result {
-    //         OutputValue::Known(v) => {
-    //             let mut vec = vec![];
-    //             rmpv::encode::write_value(&mut vec, v).unwrap();
-    //             Some(vec)
-    //         }
-    //         OutputValue::Unknown() => None,
-    //     }
-    // }
 }
 
 impl function_reverse_callback::Guest for Component {
@@ -190,7 +93,7 @@ impl function_reverse_callback::Guest for Component {
                                 let mut vec = vec![];
                                 rmpv::encode::write_value(&mut vec, v).unwrap();
                                 Some(FunctionInvocationRequest {
-                                    id: output_interface::Output::new(Output { output: f.clone(), tags: vec![] }),
+                                    id: WasmOutput::new(Output { output: f.clone(), tags: vec![] }),
                                     function_id: id.get(),
                                     value: vec,
                                 })
@@ -232,10 +135,7 @@ impl register_interface::Guest for Component {
 
         let pairs = request.object_names.iter().zip(request.object.iter());
 
-        let pairs= pairs.map(|(_name, object )| {
-            let s: String = "length".to_string();
-            // let s: String = String::from_utf8(name.clone()).unwrap();
-
+        let pairs= pairs.map(|(name, object )| {
             let v = match &*object.object.get::<Output>().output.borrow() {
                 OutputContent::Done(vec) => messagepack_to_protoc(&vec),
                 OutputContent::Mapped(_, _, _) => todo!(),
@@ -243,7 +143,7 @@ impl register_interface::Guest for Component {
                 OutputContent::Nothing => todo!()
             };
 
-            (s, v)
+            (name.clone(), v)
         });
 
 

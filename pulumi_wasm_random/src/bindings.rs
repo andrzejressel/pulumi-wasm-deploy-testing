@@ -56,54 +56,6 @@ pub mod component {
                 }
             }
 
-            #[allow(unused_unsafe, clippy::all)]
-            pub fn create_struct(fields: &[(_rt::String, &Output)]) -> Output {
-                unsafe {
-                    let vec2 = fields;
-                    let len2 = vec2.len();
-                    let layout2 = _rt::alloc::Layout::from_size_align_unchecked(vec2.len() * 12, 4);
-                    let result2 = if layout2.size() != 0 {
-                        let ptr = _rt::alloc::alloc(layout2).cast::<u8>();
-                        if ptr.is_null() {
-                            _rt::alloc::handle_alloc_error(layout2);
-                        }
-                        ptr
-                    } else {
-                        {
-                            ::core::ptr::null_mut()
-                        }
-                    };
-                    for (i, e) in vec2.into_iter().enumerate() {
-                        let base = result2.add(i * 12);
-                        {
-                            let (t0_0, t0_1) = e;
-                            let vec1 = t0_0;
-                            let ptr1 = vec1.as_ptr().cast::<u8>();
-                            let len1 = vec1.len();
-                            *base.add(4).cast::<usize>() = len1;
-                            *base.add(0).cast::<*mut u8>() = ptr1.cast_mut();
-                            *base.add(8).cast::<i32>() = (t0_1).handle() as i32;
-                        }
-                    }
-
-                    #[cfg(target_arch = "wasm32")]
-                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
-                    extern "C" {
-                        #[link_name = "create-struct"]
-                        fn wit_import(_: *mut u8, _: usize) -> i32;
-                    }
-
-                    #[cfg(not(target_arch = "wasm32"))]
-                    fn wit_import(_: *mut u8, _: usize) -> i32 {
-                        unreachable!()
-                    }
-                    let ret = wit_import(result2, len2);
-                    if layout2.size() != 0 {
-                        _rt::alloc::dealloc(result2.cast(), layout2);
-                    }
-                    Output::from_handle(ret as u32)
-                }
-            }
             impl Output {
                 #[allow(unused_unsafe, clippy::all)]
                 pub fn new(value: &[u8]) -> Self {
@@ -533,8 +485,6 @@ mod _rt {
             }
         }
     }
-    pub use alloc_crate::alloc;
-    pub use alloc_crate::string::String;
     pub use alloc_crate::vec::Vec;
     pub unsafe fn invalid_enum_discriminant<T>() -> T {
         if cfg!(debug_assertions) {
@@ -543,6 +493,8 @@ mod _rt {
             core::hint::unreachable_unchecked()
         }
     }
+    pub use alloc_crate::alloc;
+    pub use alloc_crate::string::String;
     pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
         if cfg!(debug_assertions) {
             String::from_utf8(bytes).unwrap()
@@ -584,14 +536,13 @@ pub(crate) use __export_pulumi_provider_random_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:pulumi-provider-random:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 969] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xbc\x06\x01A\x02\x01\
-A\x07\x01B\x11\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 930] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\x95\x06\x01A\x02\x01\
+A\x07\x01B\x0d\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
 \0\x13[constructor]output\x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\
 \x02\x04\0\x12[method]output.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\
 \0\x12[method]output.get\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]out\
-put.duplicate\x01\x08\x01o\x02s\x04\x01p\x09\x01@\x01\x06fields\x0a\0\x02\x04\0\x0d\
-create-struct\x01\x0b\x03\x01,component:pulumi-wasm/output-interface@0.1.0\x05\0\
+put.duplicate\x01\x08\x03\x01,component:pulumi-wasm/output-interface@0.1.0\x05\0\
 \x02\x03\0\0\x06output\x01B\x0b\x02\x03\x02\x01\x01\x04\0\x06output\x03\0\0\x01h\
 \x01\x01r\x01\x06object\x02\x04\0\x0cobject-field\x03\0\x03\x01ps\x01p\x04\x01r\x04\
 \x04types\x04names\x0cobject-names\x05\x06object\x06\x04\0\x19register-resource-\

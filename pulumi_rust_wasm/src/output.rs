@@ -5,14 +5,7 @@ use uuid::Uuid;
 pub struct Output<T> {
     phantom: PhantomData<T>,
     future: output_interface::Output,
-    // pulumi: Rc<Pulumi>,
 }
-//
-// impl <T: serde::Serialize> Into<Output<T>> for (T,) {
-//     fn into(self) -> Output<T> {
-//         Output::new(&self)
-//     }
-// }
 
 impl <T: serde::Serialize> From<T> for Output<T> {
     fn from(value: T) -> Output<T> {
@@ -30,7 +23,6 @@ impl<T> Output<T> {
         let binding = rmp_serde::to_vec(value).unwrap();
         let arg = binding.as_slice();
         let resource = output_interface::Output::new(arg);
-        // let resource = create_output(value).unwrap();
         Output {
             phantom: PhantomData,
             future: resource,
@@ -60,24 +52,5 @@ impl<T> Output<T> {
             phantom: PhantomData,
             future: new_output,
         }
-
-        // crate::bindings::component::pulumi_wasm::output_interface::Output::
-
-        // let resource = self.pulumi.map(self.future, f).unwrap();
-        // Output {
-        //     phantom: PhantomData,
-        // future: resource,
-        // pulumi: self.pulumi.clone(),
-        // }
     }
-    //
-    // pub fn get_value(&self) -> Option<T>
-    // where
-    //     T: serde::de::DeserializeOwned,
-    // {
-    //     self.pulumi
-    //         .get_output(self.future)
-    //         .unwrap()
-    //         .map(|output| rmp_serde::decode::from_slice(&*output).unwrap())
-    // }
 }

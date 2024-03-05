@@ -193,36 +193,6 @@ pub mod exports {
 
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn _export_create_struct_cabi<T: Guest>(
-                    arg0: *mut u8,
-                    arg1: usize,
-                ) -> i32 {
-                    let base4 = arg0;
-                    let len4 = arg1;
-                    let mut result4 = _rt::Vec::with_capacity(len4);
-                    for i in 0..len4 {
-                        let base = base4.add(i * 12);
-                        let e4 = {
-                            let l0 = *base.add(0).cast::<*mut u8>();
-                            let l1 = *base.add(4).cast::<usize>();
-                            let len2 = l1;
-                            let bytes2 = _rt::Vec::from_raw_parts(l0.cast(), len2, len2);
-                            let l3 = *base.add(8).cast::<i32>();
-
-                            (
-                                _rt::string_lift(bytes2),
-                                OutputBorrow::lift(l3 as u32 as usize),
-                            )
-                        };
-                        result4.push(e4);
-                    }
-                    _rt::cabi_dealloc(base4, len4 * 12, 4);
-                    let result5 = T::create_struct(result4);
-                    (result5).take_handle() as i32
-                }
-
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
                 pub unsafe fn _export_constructor_output_cabi<T: GuestOutput>(
                     arg0: *mut u8,
                     arg1: usize,
@@ -297,7 +267,6 @@ pub mod exports {
                 }
                 pub trait Guest {
                     type Output: GuestOutput;
-                    fn create_struct(fields: _rt::Vec<(_rt::String, OutputBorrow<'_>)>) -> Output;
                 }
                 pub trait GuestOutput: 'static {
                     #[doc(hidden)]
@@ -352,11 +321,6 @@ pub mod exports {
                 macro_rules! __export_component_pulumi_wasm_output_interface_0_1_0_cabi{
   ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
 
-
-    #[export_name = "component:pulumi-wasm/output-interface@0.1.0#create-struct"]
-    unsafe extern "C" fn export_create_struct(arg0: *mut u8,arg1: usize,) -> i32 {
-      $($path_to_types)*::_export_create_struct_cabi::<$ty>(arg0, arg1)
-    }
 
     #[export_name = "component:pulumi-wasm/output-interface@0.1.0#[constructor]output"]
     unsafe extern "C" fn export_constructor_output(arg0: *mut u8,arg1: usize,) -> i32 {
@@ -779,6 +743,7 @@ mod _rt {
             String::from_utf8_unchecked(bytes)
         }
     }
+    pub use alloc_crate::string::String;
     pub unsafe fn cabi_dealloc(ptr: *mut u8, size: usize, align: usize) {
         if size == 0 {
             return;
@@ -787,7 +752,6 @@ mod _rt {
         alloc::dealloc(ptr as *mut u8, layout);
     }
     pub use alloc_crate::alloc;
-    pub use alloc_crate::string::String;
     extern crate alloc as alloc_crate;
 }
 
@@ -824,15 +788,14 @@ pub(crate) use __export_pulumi_wasm_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:pulumi-wasm:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 1019] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xf9\x06\x01A\x02\x01\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 980] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xd2\x06\x01A\x02\x01\
 A\x09\x01B\x03\x01p}\x01@\x01\x07request\0\0\0\x04\0\x11register-resource\x01\x01\
-\x03\x01*component:pulumi-wasm/external-world@0.1.0\x05\0\x01B\x11\x04\0\x06outp\
+\x03\x01*component:pulumi-wasm/external-world@0.1.0\x05\0\x01B\x0d\x04\0\x06outp\
 ut\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\0\x13[constructor]output\
 \x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\x02\x04\0\x12[method]ou\
 tput.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\0\x12[method]output.get\
-\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]output.duplicate\x01\x08\x01\
-o\x02s\x04\x01p\x09\x01@\x01\x06fields\x0a\0\x02\x04\0\x0dcreate-struct\x01\x0b\x04\
+\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]output.duplicate\x01\x08\x04\
 \x01,component:pulumi-wasm/output-interface@0.1.0\x05\x01\x02\x03\0\x01\x06outpu\
 t\x01B\x0b\x02\x03\x02\x01\x02\x04\0\x06output\x03\0\0\x01h\x01\x01r\x01\x06obje\
 ct\x02\x04\0\x0cobject-field\x03\0\x03\x01ps\x01p\x04\x01r\x04\x04types\x04names\

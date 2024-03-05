@@ -12,22 +12,6 @@ impl Guest for Component {
     fn create_random_string(args: RandomStringArgs) {
         let r#type = "random:index/randomString:RandomString".to_string();
 
-        // let handle;
-        // let length = match args.length {
-        //     Ok(length) => {
-        //         handle = Output::new(rmp_serde::to_vec(&length).unwrap().as_slice());
-        //         &handle
-        //     }
-        //     Err(output) => output,
-        // };
-
-        // let object = vec![
-        //     ObjectField {
-        //         name: "length".to_string().into_bytes(),
-        //         object: length,
-        //     }
-        // ];
-
         let request = RegisterResourceRequest {
             type_: r#type,
             name: args.name,

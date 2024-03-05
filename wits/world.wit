@@ -31,9 +31,6 @@ world pulumi-rust {
 }
 
 interface output-interface {
-
-    create-struct: func(fields: list<tuple<string, borrow<output>>>) -> output;
-
     resource output {
         constructor(value: list<u8>);
         map: func(function-name: string) -> output;

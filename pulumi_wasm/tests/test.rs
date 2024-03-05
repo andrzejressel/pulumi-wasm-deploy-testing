@@ -140,52 +140,6 @@ fn should_return_value_of_handled_mapped_value() -> Result<(), Error> {
     Ok(())
 }
 
-#[ignore]
-#[test]
-fn should_create_struct() -> Result<(), Error> {
-    let (mut store, plugin) = create_engine()?;
-
-    #[derive(Deserialize, PartialEq)]
-    struct S {
-        string: String,
-        int: i32,
-    }
-
-    let string = plugin
-        .component_pulumi_wasm_output_interface()
-        .output()
-        .call_constructor(&mut store, rmp_serde::to_vec("String").unwrap().as_slice())?;
-
-    let u32 = plugin
-        .component_pulumi_wasm_output_interface()
-        .output()
-        .call_constructor(&mut store, rmp_serde::to_vec(&32i32).unwrap().as_slice())?;
-
-    let r#struct = plugin
-        .component_pulumi_wasm_output_interface()
-        .call_create_struct(
-            &mut store,
-            vec![("string".to_string(), string), ("int".to_string(), u32)].as_slice(),
-        )?;
-
-    let struct_value = plugin
-        .component_pulumi_wasm_output_interface()
-        .output()
-        .call_get(&mut store, r#struct)?
-        .unwrap();
-
-    let expected = S {
-        string: "String".to_string(),
-        int: 32,
-    };
-
-    let actual = rmp_serde::decode::from_slice::<S>(struct_value.as_slice())?;
-
-    anyhow::ensure!(expected == actual);
-
-    Ok(())
-}
-
 fn create_engine() -> Result<(Store<SimplePluginCtx>, PulumiWasm), Error> {
     let mut engine_config = wasmtime::Config::new();
     engine_config.wasm_component_model(true);
@@ -227,13 +181,10 @@ fn create_engine() -> Result<(Store<SimplePluginCtx>, PulumiWasm), Error> {
     Ok((store, plugin))
 }
 
-#[test]
-fn should_return_none_when_output_is_empty() {}
-
 fn run_all_function(
     store: &mut Store<SimplePluginCtx>,
     plugin: &PulumiWasm,
-) -> Result<(), anyhow::Error> {
+) -> Result<(), Error> {
     use crate::server::exports::component::pulumi_wasm::function_reverse_callback::FunctionInvocationResult;
     use std::borrow::BorrowMut;
 
