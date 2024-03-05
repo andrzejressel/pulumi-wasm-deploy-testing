@@ -1,7 +1,6 @@
-use crate::bindings::component::pulumi_wasm::output_interface::create_struct;
 use crate::bindings::component::pulumi_wasm::register_interface::{ObjectField, register, RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::pulumi_provider_random_interface::{
-    Guest, Output, RandomStringArgs,
+    Guest, RandomStringArgs,
 };
 
 mod bindings;

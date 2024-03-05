@@ -10,7 +10,7 @@ use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback:
     FunctionInvocationRequest, FunctionInvocationResult,
 };
 use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput};
-use crate::bindings::exports::component::pulumi_wasm::register_interface::{ObjectField, RegisterResourceRequest};
+use crate::bindings::exports::component::pulumi_wasm::register_interface::{RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::{
     function_reverse_callback, output_interface, register_interface,
 };
@@ -232,7 +232,7 @@ impl register_interface::Guest for Component {
 
         let pairs = request.object_names.iter().zip(request.object.iter());
 
-        let pairs= pairs.map(|(name, object )| {
+        let pairs= pairs.map(|(_name, object )| {
             let s: String = "length".to_string();
             // let s: String = String::from_utf8(name.clone()).unwrap();
 
