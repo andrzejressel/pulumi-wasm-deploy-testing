@@ -7,12 +7,22 @@ pub struct Output<T> {
     future: output_interface::Output,
     // pulumi: Rc<Pulumi>,
 }
+//
+// impl <T: serde::Serialize> Into<Output<T>> for (T,) {
+//     fn into(self) -> Output<T> {
+//         Output::new(&self)
+//     }
+// }
 
-
+impl <T: serde::Serialize> From<T> for Output<T> {
+    fn from(value: T) -> Output<T> {
+        Output::new(&value)
+    }
+}
 
 impl<T> Output<T> {
 
-    pub fn get_inner(&self) -> &output_interface::Output {
+    pub unsafe fn get_inner(&self) -> &output_interface::Output {
         &self.future
     }
 

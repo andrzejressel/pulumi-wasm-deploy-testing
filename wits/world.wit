@@ -75,7 +75,7 @@ interface pulumi-provider-random-interface {
 
     record random-string-args {
         name: string,
-        length: result<u32, borrow<output>>,
+        length: borrow<output>,
     }
 
     record random-string-result {

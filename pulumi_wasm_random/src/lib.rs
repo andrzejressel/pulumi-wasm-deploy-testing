@@ -12,14 +12,14 @@ impl Guest for Component {
     fn create_random_string(args: RandomStringArgs) {
         let r#type = "random:index/randomString:RandomString".to_string();
 
-        let handle;
-        let length = match args.length {
-            Ok(length) => {
-                handle = Output::new(rmp_serde::to_vec(&length).unwrap().as_slice());
-                &handle
-            }
-            Err(output) => output,
-        };
+        // let handle;
+        // let length = match args.length {
+        //     Ok(length) => {
+        //         handle = Output::new(rmp_serde::to_vec(&length).unwrap().as_slice());
+        //         &handle
+        //     }
+        //     Err(output) => output,
+        // };
 
         // let object = vec![
         //     ObjectField {
@@ -32,7 +32,7 @@ impl Guest for Component {
             type_: r#type,
             name: args.name,
             object_names: vec!["length".to_string()],
-            object: vec![ObjectField { object: length }],
+            object: vec![ObjectField { object: &args.length }],
         };
 
         register(request);
