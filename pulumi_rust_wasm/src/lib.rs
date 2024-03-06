@@ -10,7 +10,7 @@ pub mod output;
 // pub mod pulumi;
 
 lazy_static! {
-    static ref HASHMAP: Mutex<HashMap<String, Box<dyn Fn(Vec<u8>) -> Vec<u8> + Send>>> = {
+    pub static ref HASHMAP: Mutex<HashMap<String, Box<dyn Fn(Vec<u8>) -> Vec<u8> + Send>>> = {
         let m = HashMap::new();
         Mutex::new(m)
     };

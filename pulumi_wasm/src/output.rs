@@ -63,8 +63,7 @@ struct Output {
 pub(crate) enum OutputContent {
     Done(Value),
     Mapped(FunctionId, FunctionSource, OutputContentRefCell),
-    //TODO: Mapped multiple
-    Func(OutputContentRefCell, Box<dyn Fn(Vec<u8>) -> Vec<u8>>),
+    Func(Vec<OutputContentRefCell>, Box<dyn Fn(Vec<Value>) -> Value>),
     Nothing,
 }
 
@@ -99,9 +98,9 @@ pub(crate) fn map_external(
     ))
 }
 
-pub(crate) fn map_internal<F>(ref_cell: OutputContentRefCell, f: F) -> Rc<RefCell<OutputContent>>
+pub(crate) fn map_internal<F>(ref_cell: Vec<OutputContentRefCell>, f: F) -> Rc<RefCell<OutputContent>>
     where
-        F: Fn(Vec<u8>) -> Vec<u8> + 'static,
+        F: Fn(Vec<Value>) -> Value + 'static,
 {
     create_wrapper(OutputContent::Func(ref_cell, Box::new(f)))
 }

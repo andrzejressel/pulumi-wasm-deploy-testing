@@ -23,3 +23,5 @@ devenv.local.nix
 /pulumi-language-wasm/language-host.exe
 
 .idea/
+
+output.log

@@ -8,13 +8,23 @@ pub struct RandomStringArgs<'a> {
 
 pub fn create_random_string(
     args: RandomStringArgs,
-) {
+) -> Output<String> {
     let length = clone(args.length);
     let args = pulumi_provider_random_interface::RandomStringArgs {
         name: args.name.into(),
         length: &length,
     };
-    pulumi_provider_random_interface::create_random_string(&args);
+    let result = pulumi_provider_random_interface::create_random_string(&args);
+
+    random_to_domain_mapper::<String>(result.result)
+}
+
+fn random_to_domain_mapper<F: serde::Serialize>(random: pulumi_provider_random_interface::Output) -> Output<F> {
+    unsafe {
+        let inner = random.take_handle();
+        Output::<F>::new_from_handle(inner)
+        // output_interface::Output::from_handle(inner)
+    }
 }
 
 fn clone<T>(output: Output<T>) -> output_interface::Output {

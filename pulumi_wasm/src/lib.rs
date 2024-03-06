@@ -1,10 +1,15 @@
 use core::fmt::Debug;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Formatter;
 use std::ops::Deref;
+use futures::SinkExt;
+use lazy_static::lazy_static;
 use prost::Message;
-use rmpv::Value;
+use prost_types::value::Kind;
+use rmpv::{Utf8String, Value};
 use bindings::component::pulumi_wasm::external_world;
+use crate::bindings::component::pulumi_wasm::external_world::is_in_preview;
+use crate::bindings::component::pulumi_wasm::log::log;
 
 use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{
     FunctionInvocationRequest, FunctionInvocationResult,
@@ -12,10 +17,11 @@ use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback:
 use crate::bindings::exports::component::pulumi_wasm::output_interface::Output as WasmOutput;
 use crate::bindings::exports::component::pulumi_wasm::output_interface::OutputBorrow as WasmOutputBorrow;
 use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput};
-use crate::bindings::exports::component::pulumi_wasm::register_interface::{RegisterResourceRequest};
+use crate::bindings::exports::component::pulumi_wasm::register_interface::{ObjectField, RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::{
     function_reverse_callback, output_interface, register_interface,
 };
+use crate::grpc::register_resource_request;
 use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
 bindings::export!(Component with_types_in bindings);
 
@@ -27,8 +33,85 @@ struct Component;
 
 impl output_interface::Guest for Component {
     type Output = Output;
+
+    fn describe_outputs() -> String {
+        let outputs = access_map()
+            .iter()
+            .map(|o| {
+                let ref_cell = o.borrow();
+                let content = ref_cell.deref();
+                content.tpe()
+                // o.tpe
+            })
+            .collect::<Vec<_>>();
+
+        format!("{:?}", outputs)
+    }
+
+    fn non_done_exists() -> bool {
+        for o in access_map() {
+            let ref_cell = o.borrow();
+            let content = ref_cell.deref();
+            match content {
+                OutputContent::Done(_) => {}
+                OutputContent::Mapped(_, _, _) => return true,
+                OutputContent::Func(_, _) => return true,
+                OutputContent::Nothing => return true
+            }
+        }
+        false
+    }
+
+    fn combine_outputs() -> bool {
+        let outputs = access_map();
+        let mut changed = false;
+
+        outputs.iter().for_each(|o| {
+            let ref_cell = o.borrow();
+            let content = ref_cell.deref();
+
+            let new_value = match content {
+                OutputContent::Func(refcells, f) => {
+                    log("Found func");
+                    let data = refcells.iter().flat_map(|r| {
+                        let ref_cell = r.borrow();
+                        let content = ref_cell.deref();
+                        match content {
+                            OutputContent::Done(v) => {
+                                Some(v.clone())
+                            }
+                            OutputContent::Mapped(_, _, _) | OutputContent::Func(_, _) | OutputContent::Nothing => None
+                        }
+                    }).collect::<Vec<_>>();
+
+                    if (data.len() == refcells.len()) {
+                        log("Map");
+                        Some(f(data))
+                    } else {
+                        log("Cannot map");
+                        None
+                    }
+                }
+                OutputContent::Done(_) => None,
+                OutputContent::Mapped(_, _, _) => None,
+                OutputContent::Nothing => None
+            };
+
+            drop(ref_cell);
+            match new_value {
+                None => {}
+                Some(i) => {
+                    changed = true;
+                    o.replace(OutputContent::Done(i));
+                }
+            };
+        });
+
+        changed
+    }
 }
 
+#[derive(Clone)]
 pub struct Output {
     output: output::OutputContentRefCell,
     tags: Vec<String>,
@@ -70,6 +153,47 @@ impl GuestOutput for Output {
         }
     }
 
+    fn get_field(&self, field: String) -> WasmOutput {
+        let o = output::map_internal(vec![self.output.clone()], move |v| {
+            let v = v[0].clone();
+
+            let v = match v {
+                Value::Map(m) => {
+                    let key = Value::String(Utf8String::from(field.clone()));
+                    let maybe_value = m.iter().find(|(k, _)| k == &key ).map(|(_, v)| v.clone());//.unwrap_or(Value::Nil)
+                    match maybe_value {
+                        None => if (is_in_preview()) { Value::Nil } else { todo!() }
+                        Some(v) => v
+                    }
+                }
+                Value::Nil => todo!(),
+                Value::Boolean(_) => todo!(),
+                Value::Integer(_) => todo!(),
+                Value::F32(_) => todo!(),
+                Value::F64(_) => todo!(),
+                Value::String(_) => todo!(),
+                Value::Binary(_) => todo!(),
+                Value::Array(_) => todo!(),
+                Value::Ext(_, _) => todo!(),
+            };
+
+            v
+        });
+
+        WasmOutput::new(Output { output: o, tags: vec![] })
+    }
+
+    fn get_type(&self) -> String {
+        let ref_cell = self.output.borrow();
+        let content = ref_cell.deref();
+        match content {
+            OutputContent::Done(_) => "Done",
+            OutputContent::Mapped(_, _, _) => "Mapped",
+            OutputContent::Func(_, _) => "Func",
+            OutputContent::Nothing => "Nothing"
+        }.to_string()
+    }
+
     fn duplicate(&self) -> WasmOutput {
         WasmOutput::new(Output {
             output: self.output.clone(),
@@ -88,8 +212,10 @@ impl function_reverse_callback::Guest for Component {
 
                 match f1 {
                     OutputContent::Mapped(id, s, prev) if s == function_source => {
+                        log("Found mapped");
                         match &*prev.borrow() {
                             OutputContent::Done(v) => {
+                                log("Found value");
                                 let mut vec = vec![];
                                 rmpv::encode::write_value(&mut vec, v).unwrap();
                                 Some(FunctionInvocationRequest {
@@ -100,7 +226,10 @@ impl function_reverse_callback::Guest for Component {
                             }
                             OutputContent::Mapped(_, _, _)
                             | OutputContent::Func(_, _)
-                            | OutputContent::Nothing => None,
+                            | OutputContent::Nothing => {
+                                log("Value not found");
+                                None
+                            },
                         }
                     }
                     OutputContent::Mapped(_, _, _)
@@ -126,67 +255,97 @@ fn messagepack_to_protoc(v: &Value) -> prost_types::Value {
         Value::Integer(i) => prost_types::Value {
             kind: Option::from(prost_types::value::Kind::NumberValue(i.as_f64().unwrap())),
         },
-        _ => todo!()
+        _ => {
+            eprintln!("Cannot convert [{v}]");
+            todo!("Cannot convert [{v}]")
+        }
     }
 }
 
 impl register_interface::Guest for Component {
-    fn register(request: RegisterResourceRequest) {
+    fn register(request: RegisterResourceRequest) -> WasmOutput {
 
-        let pairs = request.object_names.iter().zip(request.object.iter());
+        let values = request.object.iter().map(|o| o.value.get::<Output>().output.clone()).collect::<Vec<_>>();
+        let names = request.object.iter().map(|o| o.name.clone()).collect::<Vec<_>>();
 
-        let pairs= pairs.map(|(name, object )| {
-            let v = match &*object.object.get::<Output>().output.borrow() {
-                OutputContent::Done(vec) => messagepack_to_protoc(&vec),
-                OutputContent::Mapped(_, _, _) => todo!(),
-                OutputContent::Func(_, _) => todo!(),
-                OutputContent::Nothing => todo!()
+        let new_output = output::map_internal(values, move |v| {
+
+            let pairs = names.iter().zip(v.iter()).map(|(name, value)| {
+                let v = messagepack_to_protoc(value);
+                (name.clone(), v)
+            }).collect::<Vec<_>>();
+
+            let object = prost_types::Struct {
+                fields: BTreeMap::from_iter(pairs)
             };
 
-            (name.clone(), v)
+            let request = grpc::RegisterResourceRequest {
+                r#type: request.type_.clone(),
+                name: request.name.clone(),
+                parent: "".to_string(),
+                custom: true,
+                object: Some(object),
+                protect: false,
+                dependencies: vec![],
+                provider: "".to_string(),
+                property_dependencies: Default::default(),
+                // property_dependencies: HashMap::from(
+                //     [("value".to_string(), register_resource_request::PropertyDependencies { urns: vec!["test".to_string()] })]
+                // ),
+                delete_before_replace: false,
+                version: "".to_string(),
+                ignore_changes: vec![],
+                accept_secrets: true,
+                additional_secret_outputs: vec![],
+                alias_ur_ns: vec![],
+                import_id: "".to_string(),
+                custom_timeouts: None,
+                delete_before_replace_defined: false,
+                supports_partial_values: false,
+                remote: false,
+                accept_resources: false,
+                providers: Default::default(),
+                replace_on_changes: vec![],
+                plugin_download_url: "".to_string(),
+                plugin_checksums: Default::default(),
+                retain_on_delete: false,
+                aliases: vec![],
+                deleted_with: "".to_string(),
+                alias_specs: false,
+                source_position: None,
+            };
+
+            let vec_request = request.encode_to_vec();
+
+            let result_vec = external_world::register_resource(vec_request.as_slice());
+
+            let result = grpc::RegisterResourceResponse::decode(&mut result_vec.as_slice()).unwrap();
+
+            log(format!("Result: {:?}", result).as_str());
+
+            let result = if (!is_in_preview()) {
+                let result = result.object.unwrap().fields.get("result").unwrap().clone().kind.unwrap();
+
+                match result {
+                    Kind::NullValue(_) => todo!(),
+                    Kind::NumberValue(_) => todo!(),
+                    Kind::StringValue(s) => Value::String(s.into()),
+                    Kind::BoolValue(_) => todo!(),
+                    Kind::StructValue(_) => todo!(),
+                    Kind::ListValue(_) => todo!()
+                }
+            } else {
+                Value::Nil
+            };
+
+            // FIXME
+            Value::Map(
+                vec!((Value::from("result"), result))
+            )
+
         });
 
+        WasmOutput::new(Output { output: new_output, tags: vec![] })
 
-
-        let object = prost_types::Struct {
-            fields: BTreeMap::from_iter(pairs)
-        };
-
-        let request = grpc::RegisterResourceRequest {
-            r#type: request.type_.clone(),
-            name: request.name.clone(),
-            parent: "".to_string(),
-            custom: true,
-            object: Some(object),
-            protect: false,
-            dependencies: vec![],
-            provider: "".to_string(),
-            property_dependencies: Default::default(),
-            delete_before_replace: false,
-            version: "".to_string(),
-            ignore_changes: vec![],
-            accept_secrets: true,
-            additional_secret_outputs: vec![],
-            alias_ur_ns: vec![],
-            import_id: "".to_string(),
-            custom_timeouts: None,
-            delete_before_replace_defined: false,
-            supports_partial_values: false,
-            remote: false,
-            accept_resources: false,
-            providers: Default::default(),
-            replace_on_changes: vec![],
-            plugin_download_url: "".to_string(),
-            plugin_checksums: Default::default(),
-            retain_on_delete: false,
-            aliases: vec![],
-            deleted_with: "".to_string(),
-            alias_specs: false,
-            source_position: None,
-        };
-
-        let vec_request = request.encode_to_vec();
-
-        external_world::register_resource(vec_request.as_slice());
     }
 }

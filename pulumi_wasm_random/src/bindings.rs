@@ -56,6 +56,68 @@ pub mod component {
                 }
             }
 
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn describe_outputs() -> _rt::String {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "describe-outputs"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<*mut u8>();
+                    let l2 = *ptr0.add(4).cast::<usize>();
+                    let len3 = l2;
+                    let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                    _rt::string_lift(bytes3)
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn non_done_exists() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "non-done-exists"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn combine_outputs() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "combine-outputs"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
             impl Output {
                 #[allow(unused_unsafe, clippy::all)]
                 pub fn new(value: &[u8]) -> Self {
@@ -144,6 +206,58 @@ pub mod component {
             }
             impl Output {
                 #[allow(unused_unsafe, clippy::all)]
+                pub fn get_field(&self, field: &str) -> Output {
+                    unsafe {
+                        let vec0 = field;
+                        let ptr0 = vec0.as_ptr().cast::<u8>();
+                        let len0 = vec0.len();
+
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                        extern "C" {
+                            #[link_name = "[method]output.get-field"]
+                            fn wit_import(_: i32, _: *mut u8, _: usize) -> i32;
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8, _: usize) -> i32 {
+                            unreachable!()
+                        }
+                        let ret = wit_import((self).handle() as i32, ptr0.cast_mut(), len0);
+                        Output::from_handle(ret as u32)
+                    }
+                }
+            }
+            impl Output {
+                #[allow(unused_unsafe, clippy::all)]
+                pub fn get_type(&self) -> _rt::String {
+                    unsafe {
+                        #[repr(align(4))]
+                        struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                        let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                        let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                        extern "C" {
+                            #[link_name = "[method]output.get-type"]
+                            fn wit_import(_: i32, _: *mut u8);
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8) {
+                            unreachable!()
+                        }
+                        wit_import((self).handle() as i32, ptr0);
+                        let l1 = *ptr0.add(0).cast::<*mut u8>();
+                        let l2 = *ptr0.add(4).cast::<usize>();
+                        let len3 = l2;
+                        let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                        _rt::string_lift(bytes3)
+                    }
+                }
+            }
+            impl Output {
+                #[allow(unused_unsafe, clippy::all)]
                 pub fn duplicate(&self) -> Output {
                     unsafe {
                         #[cfg(target_arch = "wasm32")]
@@ -174,20 +288,20 @@ pub mod component {
             use super::super::super::_rt;
             pub type Output = super::super::super::component::pulumi_wasm::output_interface::Output;
             pub struct ObjectField<'a> {
-                /// name: list<u8>, //FIXME: String does not work
-                pub object: &'a Output,
+                pub name: _rt::String,
+                pub value: &'a Output,
             }
             impl<'a> ::core::fmt::Debug for ObjectField<'a> {
                 fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
                     f.debug_struct("ObjectField")
-                        .field("object", &self.object)
+                        .field("name", &self.name)
+                        .field("value", &self.value)
                         .finish()
                 }
             }
             pub struct RegisterResourceRequest<'a> {
                 pub type_: _rt::String,
                 pub name: _rt::String,
-                pub object_names: _rt::Vec<_rt::String>,
                 pub object: _rt::Vec<ObjectField<'a>>,
             }
             impl<'a> ::core::fmt::Debug for RegisterResourceRequest<'a> {
@@ -195,18 +309,16 @@ pub mod component {
                     f.debug_struct("RegisterResourceRequest")
                         .field("type", &self.type_)
                         .field("name", &self.name)
-                        .field("object-names", &self.object_names)
                         .field("object", &self.object)
                         .finish()
                 }
             }
             #[allow(unused_unsafe, clippy::all)]
-            pub fn register(request: &RegisterResourceRequest<'_>) {
+            pub fn register(request: &RegisterResourceRequest<'_>) -> Output {
                 unsafe {
                     let RegisterResourceRequest {
                         type_: type_0,
                         name: name0,
-                        object_names: object_names0,
                         object: object0,
                     } = request;
                     let vec1 = type_0;
@@ -215,13 +327,13 @@ pub mod component {
                     let vec2 = name0;
                     let ptr2 = vec2.as_ptr().cast::<u8>();
                     let len2 = vec2.len();
-                    let vec4 = object_names0;
-                    let len4 = vec4.len();
-                    let layout4 = _rt::alloc::Layout::from_size_align_unchecked(vec4.len() * 8, 4);
-                    let result4 = if layout4.size() != 0 {
-                        let ptr = _rt::alloc::alloc(layout4).cast::<u8>();
+                    let vec5 = object0;
+                    let len5 = vec5.len();
+                    let layout5 = _rt::alloc::Layout::from_size_align_unchecked(vec5.len() * 12, 4);
+                    let result5 = if layout5.size() != 0 {
+                        let ptr = _rt::alloc::alloc(layout5).cast::<u8>();
                         if ptr.is_null() {
-                            _rt::alloc::handle_alloc_error(layout4);
+                            _rt::alloc::handle_alloc_error(layout5);
                         }
                         ptr
                     } else {
@@ -229,35 +341,19 @@ pub mod component {
                             ::core::ptr::null_mut()
                         }
                     };
-                    for (i, e) in vec4.into_iter().enumerate() {
-                        let base = result4.add(i * 8);
+                    for (i, e) in vec5.into_iter().enumerate() {
+                        let base = result5.add(i * 12);
                         {
-                            let vec3 = e;
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            *base.add(4).cast::<usize>() = len3;
-                            *base.add(0).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                    }
-                    let vec6 = object0;
-                    let len6 = vec6.len();
-                    let layout6 = _rt::alloc::Layout::from_size_align_unchecked(vec6.len() * 4, 4);
-                    let result6 = if layout6.size() != 0 {
-                        let ptr = _rt::alloc::alloc(layout6).cast::<u8>();
-                        if ptr.is_null() {
-                            _rt::alloc::handle_alloc_error(layout6);
-                        }
-                        ptr
-                    } else {
-                        {
-                            ::core::ptr::null_mut()
-                        }
-                    };
-                    for (i, e) in vec6.into_iter().enumerate() {
-                        let base = result6.add(i * 4);
-                        {
-                            let ObjectField { object: object5 } = e;
-                            *base.add(0).cast::<i32>() = (object5).handle() as i32;
+                            let ObjectField {
+                                name: name3,
+                                value: value3,
+                            } = e;
+                            let vec4 = name3;
+                            let ptr4 = vec4.as_ptr().cast::<u8>();
+                            let len4 = vec4.len();
+                            *base.add(4).cast::<usize>() = len4;
+                            *base.add(0).cast::<*mut u8>() = ptr4.cast_mut();
+                            *base.add(8).cast::<i32>() = (value3).handle() as i32;
                         }
                     }
 
@@ -272,9 +368,7 @@ pub mod component {
                             _: usize,
                             _: *mut u8,
                             _: usize,
-                            _: *mut u8,
-                            _: usize,
-                        );
+                        ) -> i32;
                     }
 
                     #[cfg(not(target_arch = "wasm32"))]
@@ -285,27 +379,15 @@ pub mod component {
                         _: usize,
                         _: *mut u8,
                         _: usize,
-                        _: *mut u8,
-                        _: usize,
-                    ) {
+                    ) -> i32 {
                         unreachable!()
                     }
-                    wit_import(
-                        ptr1.cast_mut(),
-                        len1,
-                        ptr2.cast_mut(),
-                        len2,
-                        result4,
-                        len4,
-                        result6,
-                        len6,
-                    );
-                    if layout4.size() != 0 {
-                        _rt::alloc::dealloc(result4.cast(), layout4);
+                    let ret =
+                        wit_import(ptr1.cast_mut(), len1, ptr2.cast_mut(), len2, result5, len5);
+                    if layout5.size() != 0 {
+                        _rt::alloc::dealloc(result5.cast(), layout5);
                     }
-                    if layout6.size() != 0 {
-                        _rt::alloc::dealloc(result6.cast(), layout6);
-                    }
+                    super::super::super::component::pulumi_wasm::output_interface::Output::from_handle(ret as u32)
                 }
             }
         }
@@ -337,6 +419,16 @@ pub mod exports {
                             .finish()
                     }
                 }
+                pub struct RandomStringResult {
+                    pub result: Output,
+                }
+                impl ::core::fmt::Debug for RandomStringResult {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        f.debug_struct("RandomStringResult")
+                            .field("result", &self.result)
+                            .finish()
+                    }
+                }
 
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
@@ -344,17 +436,19 @@ pub mod exports {
                     arg0: *mut u8,
                     arg1: usize,
                     arg2: i32,
-                ) {
+                ) -> i32 {
                     let handle1;
                     let len0 = arg1;
                     let bytes0 = _rt::Vec::from_raw_parts(arg0.cast(), len0, len0);
-                    T::create_random_string(RandomStringArgs {
+                    let result2 = T::create_random_string(RandomStringArgs {
                         name: _rt::string_lift(bytes0),
                         length: {
                             handle1 = super::super::super::super::component::pulumi_wasm::output_interface::Output::from_handle(arg2 as u32);
                             &handle1
                         },
                     });
+                    let RandomStringResult { result: result3 } = result2;
+                    (result3).take_handle() as i32
                 }
 
                 #[doc(hidden)]
@@ -363,8 +457,7 @@ pub mod exports {
                     T::handle_functions();
                 }
                 pub trait Guest {
-                    /// create-random-string: func(args: random-string-args) -> random-string-result;
-                    fn create_random_string(args: RandomStringArgs<'_>);
+                    fn create_random_string(args: RandomStringArgs<'_>) -> RandomStringResult;
                     fn handle_functions();
                 }
                 #[doc(hidden)]
@@ -374,7 +467,7 @@ pub mod exports {
 
 
         #[export_name = "component:pulumi-wasm/pulumi-provider-random-interface@0.1.0#create-random-string"]
-        unsafe extern "C" fn export_create_random_string(arg0: *mut u8,arg1: usize,arg2: i32,) {
+        unsafe extern "C" fn export_create_random_string(arg0: *mut u8,arg1: usize,arg2: i32,) -> i32 {
           $($path_to_types)*::_export_create_random_string_cabi::<$ty>(arg0, arg1, arg2)
         }
 
@@ -485,7 +578,26 @@ mod _rt {
             }
         }
     }
+    pub use alloc_crate::string::String;
     pub use alloc_crate::vec::Vec;
+    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
+        if cfg!(debug_assertions) {
+            String::from_utf8(bytes).unwrap()
+        } else {
+            String::from_utf8_unchecked(bytes)
+        }
+    }
+    pub unsafe fn bool_lift(val: u8) -> bool {
+        if cfg!(debug_assertions) {
+            match val {
+                0 => false,
+                1 => true,
+                _ => panic!("invalid bool discriminant"),
+            }
+        } else {
+            ::core::mem::transmute::<u8, bool>(val)
+        }
+    }
     pub unsafe fn invalid_enum_discriminant<T>() -> T {
         if cfg!(debug_assertions) {
             panic!("invalid enum discriminant")
@@ -494,14 +606,6 @@ mod _rt {
         }
     }
     pub use alloc_crate::alloc;
-    pub use alloc_crate::string::String;
-    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
-        if cfg!(debug_assertions) {
-            String::from_utf8(bytes).unwrap()
-        } else {
-            String::from_utf8_unchecked(bytes)
-        }
-    }
     extern crate alloc as alloc_crate;
 }
 
@@ -536,27 +640,30 @@ pub(crate) use __export_pulumi_provider_random_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:pulumi-provider-random:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 930] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\x95\x06\x01A\x02\x01\
-A\x07\x01B\x0d\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 1073] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xa4\x07\x01A\x02\x01\
+A\x07\x01B\x16\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
 \0\x13[constructor]output\x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\
 \x02\x04\0\x12[method]output.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\
-\0\x12[method]output.get\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]out\
-put.duplicate\x01\x08\x03\x01,component:pulumi-wasm/output-interface@0.1.0\x05\0\
-\x02\x03\0\0\x06output\x01B\x0b\x02\x03\x02\x01\x01\x04\0\x06output\x03\0\0\x01h\
-\x01\x01r\x01\x06object\x02\x04\0\x0cobject-field\x03\0\x03\x01ps\x01p\x04\x01r\x04\
-\x04types\x04names\x0cobject-names\x05\x06object\x06\x04\0\x19register-resource-\
-request\x03\0\x07\x01@\x01\x07request\x08\x01\0\x04\0\x08register\x01\x09\x03\x01\
-.component:pulumi-wasm/register-interface@0.1.0\x05\x02\x01B\x10\x02\x03\x02\x01\
-\x01\x04\0\x06output\x03\0\0\x01ky\x01h\x01\x01k\x03\x01q\x02\x07literal\x01\x02\
-\0\x03res\x01\x04\0\x04\0\x0aeither-u32\x03\0\x05\x01r\x02\x04names\x06length\x03\
-\x04\0\x12random-string-args\x03\0\x07\x01i\x01\x01r\x02\x03url\x09\x06result\x09\
-\x04\0\x14random-string-result\x03\0\x0a\x01@\x01\x04args\x08\x01\0\x04\0\x14cre\
-ate-random-string\x01\x0c\x01@\0\x01\0\x04\0\x10handle-functions\x01\x0d\x04\x01\
-<component:pulumi-wasm/pulumi-provider-random-interface@0.1.0\x05\x03\x04\x012co\
-mponent:pulumi-wasm/pulumi-provider-random@0.1.0\x04\0\x0b\x1c\x01\0\x16pulumi-p\
-rovider-random\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x07\
-0.201.0\x10wit-bindgen-rust\x060.20.0";
+\0\x12[method]output.get\x01\x07\x01@\x02\x04self\x04\x05fields\0\x02\x04\0\x18[\
+method]output.get-field\x01\x08\x01@\x01\x04self\x04\0s\x04\0\x17[method]output.\
+get-type\x01\x09\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]output.duplicate\x01\
+\x0a\x01@\0\0s\x04\0\x10describe-outputs\x01\x0b\x01@\0\0\x7f\x04\0\x0fnon-done-\
+exists\x01\x0c\x04\0\x0fcombine-outputs\x01\x0c\x03\x01,component:pulumi-wasm/ou\
+tput-interface@0.1.0\x05\0\x02\x03\0\0\x06output\x01B\x0b\x02\x03\x02\x01\x01\x04\
+\0\x06output\x03\0\0\x01h\x01\x01r\x02\x04names\x05value\x02\x04\0\x0cobject-fie\
+ld\x03\0\x03\x01p\x04\x01r\x03\x04types\x04names\x06object\x05\x04\0\x19register\
+-resource-request\x03\0\x06\x01i\x01\x01@\x01\x07request\x07\0\x08\x04\0\x08regi\
+ster\x01\x09\x03\x01.component:pulumi-wasm/register-interface@0.1.0\x05\x02\x01B\
+\x10\x02\x03\x02\x01\x01\x04\0\x06output\x03\0\0\x01ky\x01h\x01\x01k\x03\x01q\x02\
+\x07literal\x01\x02\0\x03res\x01\x04\0\x04\0\x0aeither-u32\x03\0\x05\x01r\x02\x04\
+names\x06length\x03\x04\0\x12random-string-args\x03\0\x07\x01i\x01\x01r\x01\x06r\
+esult\x09\x04\0\x14random-string-result\x03\0\x0a\x01@\x01\x04args\x08\0\x0b\x04\
+\0\x14create-random-string\x01\x0c\x01@\0\x01\0\x04\0\x10handle-functions\x01\x0d\
+\x04\x01<component:pulumi-wasm/pulumi-provider-random-interface@0.1.0\x05\x03\x04\
+\x012component:pulumi-wasm/pulumi-provider-random@0.1.0\x04\0\x0b\x1c\x01\0\x16p\
+ulumi-provider-random\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-com\
+ponent\x070.201.0\x10wit-bindgen-rust\x060.20.0";
 
 #[inline(never)]
 #[doc(hidden)]

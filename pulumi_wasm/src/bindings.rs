@@ -4,6 +4,36 @@ pub mod component {
     pub mod pulumi_wasm {
 
         #[allow(clippy::all)]
+        pub mod log {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn log(message: &str) {
+                unsafe {
+                    let vec0 = message;
+                    let ptr0 = vec0.as_ptr().cast::<u8>();
+                    let len0 = vec0.len();
+
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/log@0.1.0")]
+                    extern "C" {
+                        #[link_name = "log"]
+                        fn wit_import(_: *mut u8, _: usize);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8, _: usize) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0.cast_mut(), len0);
+                }
+            }
+        }
+
+        #[allow(clippy::all)]
         pub mod external_world {
             #[used]
             #[doc(hidden)]
@@ -11,6 +41,24 @@ pub mod component {
             static __FORCE_SECTION_REF: fn() =
                 super::super::super::__link_custom_section_describing_imports;
             use super::super::super::_rt;
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn is_in_preview() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/external-world@0.1.0")]
+                    extern "C" {
+                        #[link_name = "is-in-preview"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
             #[allow(unused_unsafe, clippy::all)]
             pub fn register_resource(request: &[u8]) -> _rt::Vec<u8> {
                 unsafe {
@@ -193,6 +241,48 @@ pub mod exports {
 
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
+                pub unsafe fn _export_describe_outputs_cabi<T: Guest>() -> *mut u8 {
+                    let result0 = T::describe_outputs();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec2 = (result0.into_bytes()).into_boxed_slice();
+                    let ptr2 = vec2.as_ptr().cast::<u8>();
+                    let len2 = vec2.len();
+                    ::core::mem::forget(vec2);
+                    *ptr1.add(4).cast::<usize>() = len2;
+                    *ptr1.add(0).cast::<*mut u8>() = ptr2.cast_mut();
+                    ptr1
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_describe_outputs<T: Guest>(arg0: *mut u8) {
+                    let l0 = *arg0.add(0).cast::<*mut u8>();
+                    let l1 = *arg0.add(4).cast::<usize>();
+                    _rt::cabi_dealloc(l0, l1, 1);
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_non_done_exists_cabi<T: Guest>() -> i32 {
+                    let result0 = T::non_done_exists();
+                    match result0 {
+                        true => 1,
+                        false => 0,
+                    }
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_combine_outputs_cabi<T: Guest>() -> i32 {
+                    let result0 = T::combine_outputs();
+                    match result0 {
+                        true => 1,
+                        false => 0,
+                    }
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
                 pub unsafe fn _export_constructor_output_cabi<T: GuestOutput>(
                     arg0: *mut u8,
                     arg1: usize,
@@ -259,6 +349,46 @@ pub mod exports {
 
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_get_field_cabi<T: GuestOutput>(
+                    arg0: i32,
+                    arg1: *mut u8,
+                    arg2: usize,
+                ) -> i32 {
+                    let len0 = arg2;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
+                    let result1 = T::get_field(
+                        OutputBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::string_lift(bytes0),
+                    );
+                    (result1).take_handle() as i32
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_get_type_cabi<T: GuestOutput>(
+                    arg0: i32,
+                ) -> *mut u8 {
+                    let result0 = T::get_type(OutputBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec2 = (result0.into_bytes()).into_boxed_slice();
+                    let ptr2 = vec2.as_ptr().cast::<u8>();
+                    let len2 = vec2.len();
+                    ::core::mem::forget(vec2);
+                    *ptr1.add(4).cast::<usize>() = len2;
+                    *ptr1.add(0).cast::<*mut u8>() = ptr2.cast_mut();
+                    ptr1
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_method_output_get_type<T: GuestOutput>(arg0: *mut u8) {
+                    let l0 = *arg0.add(0).cast::<*mut u8>();
+                    let l1 = *arg0.add(4).cast::<usize>();
+                    _rt::cabi_dealloc(l0, l1, 1);
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
                 pub unsafe fn _export_method_output_duplicate_cabi<T: GuestOutput>(
                     arg0: i32,
                 ) -> i32 {
@@ -267,6 +397,9 @@ pub mod exports {
                 }
                 pub trait Guest {
                     type Output: GuestOutput;
+                    fn describe_outputs() -> _rt::String;
+                    fn non_done_exists() -> bool;
+                    fn combine_outputs() -> bool;
                 }
                 pub trait GuestOutput: 'static {
                     #[doc(hidden)]
@@ -314,6 +447,8 @@ pub mod exports {
                     fn new(value: _rt::Vec<u8>) -> Self;
                     fn map(&self, function_name: _rt::String) -> Output;
                     fn get(&self) -> Option<_rt::Vec<u8>>;
+                    fn get_field(&self, field: _rt::String) -> Output;
+                    fn get_type(&self) -> _rt::String;
                     fn duplicate(&self) -> Output;
                 }
                 #[doc(hidden)]
@@ -321,6 +456,26 @@ pub mod exports {
                 macro_rules! __export_component_pulumi_wasm_output_interface_0_1_0_cabi{
   ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
 
+
+    #[export_name = "component:pulumi-wasm/output-interface@0.1.0#describe-outputs"]
+    unsafe extern "C" fn export_describe_outputs() -> *mut u8 {
+      $($path_to_types)*::_export_describe_outputs_cabi::<$ty>()
+    }
+
+    #[export_name = "cabi_post_component:pulumi-wasm/output-interface@0.1.0#describe-outputs"]
+    unsafe extern "C" fn _post_return_describe_outputs(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_describe_outputs::<$ty>(arg0)
+    }
+
+    #[export_name = "component:pulumi-wasm/output-interface@0.1.0#non-done-exists"]
+    unsafe extern "C" fn export_non_done_exists() -> i32 {
+      $($path_to_types)*::_export_non_done_exists_cabi::<$ty>()
+    }
+
+    #[export_name = "component:pulumi-wasm/output-interface@0.1.0#combine-outputs"]
+    unsafe extern "C" fn export_combine_outputs() -> i32 {
+      $($path_to_types)*::_export_combine_outputs_cabi::<$ty>()
+    }
 
     #[export_name = "component:pulumi-wasm/output-interface@0.1.0#[constructor]output"]
     unsafe extern "C" fn export_constructor_output(arg0: *mut u8,arg1: usize,) -> i32 {
@@ -340,6 +495,21 @@ pub mod exports {
     #[export_name = "cabi_post_component:pulumi-wasm/output-interface@0.1.0#[method]output.get"]
     unsafe extern "C" fn _post_return_method_output_get(arg0: *mut u8,) {
       $($path_to_types)*::__post_return_method_output_get::<<$ty as $($path_to_types)*::Guest>::Output>(arg0)
+    }
+
+    #[export_name = "component:pulumi-wasm/output-interface@0.1.0#[method]output.get-field"]
+    unsafe extern "C" fn export_method_output_get_field(arg0: i32,arg1: *mut u8,arg2: usize,) -> i32 {
+      $($path_to_types)*::_export_method_output_get_field_cabi::<<$ty as $($path_to_types)*::Guest>::Output>(arg0, arg1, arg2)
+    }
+
+    #[export_name = "component:pulumi-wasm/output-interface@0.1.0#[method]output.get-type"]
+    unsafe extern "C" fn export_method_output_get_type(arg0: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_get_type_cabi::<<$ty as $($path_to_types)*::Guest>::Output>(arg0)
+    }
+
+    #[export_name = "cabi_post_component:pulumi-wasm/output-interface@0.1.0#[method]output.get-type"]
+    unsafe extern "C" fn _post_return_method_output_get_type(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_method_output_get_type::<<$ty as $($path_to_types)*::Guest>::Output>(arg0)
     }
 
     #[export_name = "component:pulumi-wasm/output-interface@0.1.0#[method]output.duplicate"]
@@ -367,20 +537,20 @@ pub mod exports {
                 pub type Output = super::super::super::super::exports::component::pulumi_wasm::output_interface::Output;
                 pub type OutputBorrow<'a> = super::super::super::super::exports::component::pulumi_wasm::output_interface::OutputBorrow<'a>;
                 pub struct ObjectField<'a> {
-                    /// name: list<u8>, //FIXME: String does not work
-                    pub object: OutputBorrow<'a>,
+                    pub name: _rt::String,
+                    pub value: OutputBorrow<'a>,
                 }
                 impl<'a> ::core::fmt::Debug for ObjectField<'a> {
                     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
                         f.debug_struct("ObjectField")
-                            .field("object", &self.object)
+                            .field("name", &self.name)
+                            .field("value", &self.value)
                             .finish()
                     }
                 }
                 pub struct RegisterResourceRequest<'a> {
                     pub type_: _rt::String,
                     pub name: _rt::String,
-                    pub object_names: _rt::Vec<_rt::String>,
                     pub object: _rt::Vec<ObjectField<'a>>,
                 }
                 impl<'a> ::core::fmt::Debug for RegisterResourceRequest<'a> {
@@ -388,7 +558,6 @@ pub mod exports {
                         f.debug_struct("RegisterResourceRequest")
                             .field("type", &self.type_)
                             .field("name", &self.name)
-                            .field("object-names", &self.object_names)
                             .field("object", &self.object)
                             .finish()
                     }
@@ -403,53 +572,40 @@ pub mod exports {
                     arg3: usize,
                     arg4: *mut u8,
                     arg5: usize,
-                    arg6: *mut u8,
-                    arg7: usize,
-                ) {
+                ) -> i32 {
                     let len0 = arg1;
                     let bytes0 = _rt::Vec::from_raw_parts(arg0.cast(), len0, len0);
                     let len1 = arg3;
                     let bytes1 = _rt::Vec::from_raw_parts(arg2.cast(), len1, len1);
-                    let base5 = arg4;
-                    let len5 = arg5;
-                    let mut result5 = _rt::Vec::with_capacity(len5);
-                    for i in 0..len5 {
-                        let base = base5.add(i * 8);
-                        let e5 = {
+                    let base6 = arg4;
+                    let len6 = arg5;
+                    let mut result6 = _rt::Vec::with_capacity(len6);
+                    for i in 0..len6 {
+                        let base = base6.add(i * 12);
+                        let e6 = {
                             let l2 = *base.add(0).cast::<*mut u8>();
                             let l3 = *base.add(4).cast::<usize>();
                             let len4 = l3;
                             let bytes4 = _rt::Vec::from_raw_parts(l2.cast(), len4, len4);
-
-                            _rt::string_lift(bytes4)
-                        };
-                        result5.push(e5);
-                    }
-                    _rt::cabi_dealloc(base5, len5 * 8, 4);
-                    let base7 = arg6;
-                    let len7 = arg7;
-                    let mut result7 = _rt::Vec::with_capacity(len7);
-                    for i in 0..len7 {
-                        let base = base7.add(i * 4);
-                        let e7 = {
-                            let l6 = *base.add(0).cast::<i32>();
+                            let l5 = *base.add(8).cast::<i32>();
 
                             ObjectField {
-                                object: OutputBorrow::lift(l6 as u32 as usize),
+                                name: _rt::string_lift(bytes4),
+                                value: OutputBorrow::lift(l5 as u32 as usize),
                             }
                         };
-                        result7.push(e7);
+                        result6.push(e6);
                     }
-                    _rt::cabi_dealloc(base7, len7 * 4, 4);
-                    T::register(RegisterResourceRequest {
+                    _rt::cabi_dealloc(base6, len6 * 12, 4);
+                    let result7 = T::register(RegisterResourceRequest {
                         type_: _rt::string_lift(bytes0),
                         name: _rt::string_lift(bytes1),
-                        object_names: result5,
-                        object: result7,
+                        object: result6,
                     });
+                    (result7).take_handle() as i32
                 }
                 pub trait Guest {
-                    fn register(request: RegisterResourceRequest<'_>);
+                    fn register(request: RegisterResourceRequest<'_>) -> Output;
                 }
                 #[doc(hidden)]
 
@@ -458,8 +614,8 @@ pub mod exports {
 
 
     #[export_name = "component:pulumi-wasm/register-interface@0.1.0#register"]
-    unsafe extern "C" fn export_register(arg0: *mut u8,arg1: usize,arg2: *mut u8,arg3: usize,arg4: *mut u8,arg5: usize,arg6: *mut u8,arg7: usize,) {
-      $($path_to_types)*::_export_register_cabi::<$ty>(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    unsafe extern "C" fn export_register(arg0: *mut u8,arg1: usize,arg2: *mut u8,arg3: usize,arg4: *mut u8,arg5: usize,) -> i32 {
+      $($path_to_types)*::_export_register_cabi::<$ty>(arg0, arg1, arg2, arg3, arg4, arg5)
     }
   };);
 }
@@ -640,6 +796,17 @@ pub mod exports {
     }
 }
 mod _rt {
+    pub unsafe fn bool_lift(val: u8) -> bool {
+        if cfg!(debug_assertions) {
+            match val {
+                0 => false,
+                1 => true,
+                _ => panic!("invalid bool discriminant"),
+            }
+        } else {
+            ::core::mem::transmute::<u8, bool>(val)
+        }
+    }
     pub use alloc_crate::vec::Vec;
 
     use core::fmt;
@@ -736,20 +903,20 @@ mod _rt {
         }
     }
     pub use alloc_crate::boxed::Box;
-    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
-        if cfg!(debug_assertions) {
-            String::from_utf8(bytes).unwrap()
-        } else {
-            String::from_utf8_unchecked(bytes)
-        }
-    }
-    pub use alloc_crate::string::String;
     pub unsafe fn cabi_dealloc(ptr: *mut u8, size: usize, align: usize) {
         if size == 0 {
             return;
         }
         let layout = alloc::Layout::from_size_align_unchecked(size, align);
         alloc::dealloc(ptr as *mut u8, layout);
+    }
+    pub use alloc_crate::string::String;
+    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
+        if cfg!(debug_assertions) {
+            String::from_utf8(bytes).unwrap()
+        } else {
+            String::from_utf8_unchecked(bytes)
+        }
     }
     pub use alloc_crate::alloc;
     extern crate alloc as alloc_crate;
@@ -788,28 +955,33 @@ pub(crate) use __export_pulumi_wasm_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:pulumi-wasm:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 980] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xd2\x06\x01A\x02\x01\
-A\x09\x01B\x03\x01p}\x01@\x01\x07request\0\0\0\x04\0\x11register-resource\x01\x01\
-\x03\x01*component:pulumi-wasm/external-world@0.1.0\x05\0\x01B\x0d\x04\0\x06outp\
-ut\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\0\x13[constructor]output\
-\x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\x02\x04\0\x12[method]ou\
-tput.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\0\x12[method]output.get\
-\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]output.duplicate\x01\x08\x04\
-\x01,component:pulumi-wasm/output-interface@0.1.0\x05\x01\x02\x03\0\x01\x06outpu\
-t\x01B\x0b\x02\x03\x02\x01\x02\x04\0\x06output\x03\0\0\x01h\x01\x01r\x01\x06obje\
-ct\x02\x04\0\x0cobject-field\x03\0\x03\x01ps\x01p\x04\x01r\x04\x04types\x04names\
-\x0cobject-names\x05\x06object\x06\x04\0\x19register-resource-request\x03\0\x07\x01\
-@\x01\x07request\x08\x01\0\x04\0\x08register\x01\x09\x04\x01.component:pulumi-wa\
-sm/register-interface@0.1.0\x05\x03\x01B\x0f\x02\x03\x02\x01\x02\x04\0\x06output\
-\x03\0\0\x01i\x01\x01p}\x01r\x03\x02id\x02\x0bfunction-ids\x05value\x03\x04\0\x1b\
-function-invocation-request\x03\0\x04\x01h\x01\x01r\x02\x02id\x06\x05value\x03\x04\
-\0\x1afunction-invocation-result\x03\0\x07\x01p\x05\x01@\x01\x06sources\0\x09\x04\
-\0\x0dget-functions\x01\x0a\x01p\x08\x01@\x01\x07results\x0b\x01\0\x04\0\x0dset-\
-functions\x01\x0c\x04\x015component:pulumi-wasm/function-reverse-callback@0.1.0\x05\
-\x04\x04\x01'component:pulumi-wasm/pulumi-wasm@0.1.0\x04\0\x0b\x11\x01\0\x0bpulu\
-mi-wasm\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x070.20\
-1.0\x10wit-bindgen-rust\x060.20.0";
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 1212] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xba\x08\x01A\x02\x01\
+A\x0b\x01B\x02\x01@\x01\x07messages\x01\0\x04\0\x03log\x01\0\x03\x01\x1fcomponen\
+t:pulumi-wasm/log@0.1.0\x05\0\x01B\x05\x01@\0\0\x7f\x04\0\x0dis-in-preview\x01\0\
+\x01p}\x01@\x01\x07request\x01\0\x01\x04\0\x11register-resource\x01\x02\x03\x01*\
+component:pulumi-wasm/external-world@0.1.0\x05\x01\x01B\x16\x04\0\x06output\x03\x01\
+\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\0\x13[constructor]output\x01\x03\x01\
+h\0\x01@\x02\x04self\x04\x0dfunction-names\0\x02\x04\0\x12[method]output.map\x01\
+\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\0\x12[method]output.get\x01\x07\x01\
+@\x02\x04self\x04\x05fields\0\x02\x04\0\x18[method]output.get-field\x01\x08\x01@\
+\x01\x04self\x04\0s\x04\0\x17[method]output.get-type\x01\x09\x01@\x01\x04self\x04\
+\0\x02\x04\0\x18[method]output.duplicate\x01\x0a\x01@\0\0s\x04\0\x10describe-out\
+puts\x01\x0b\x01@\0\0\x7f\x04\0\x0fnon-done-exists\x01\x0c\x04\0\x0fcombine-outp\
+uts\x01\x0c\x04\x01,component:pulumi-wasm/output-interface@0.1.0\x05\x02\x02\x03\
+\0\x02\x06output\x01B\x0b\x02\x03\x02\x01\x03\x04\0\x06output\x03\0\0\x01h\x01\x01\
+r\x02\x04names\x05value\x02\x04\0\x0cobject-field\x03\0\x03\x01p\x04\x01r\x03\x04\
+types\x04names\x06object\x05\x04\0\x19register-resource-request\x03\0\x06\x01i\x01\
+\x01@\x01\x07request\x07\0\x08\x04\0\x08register\x01\x09\x04\x01.component:pulum\
+i-wasm/register-interface@0.1.0\x05\x04\x01B\x0f\x02\x03\x02\x01\x03\x04\0\x06ou\
+tput\x03\0\0\x01i\x01\x01p}\x01r\x03\x02id\x02\x0bfunction-ids\x05value\x03\x04\0\
+\x1bfunction-invocation-request\x03\0\x04\x01h\x01\x01r\x02\x02id\x06\x05value\x03\
+\x04\0\x1afunction-invocation-result\x03\0\x07\x01p\x05\x01@\x01\x06sources\0\x09\
+\x04\0\x0dget-functions\x01\x0a\x01p\x08\x01@\x01\x07results\x0b\x01\0\x04\0\x0d\
+set-functions\x01\x0c\x04\x015component:pulumi-wasm/function-reverse-callback@0.\
+1.0\x05\x05\x04\x01'component:pulumi-wasm/pulumi-wasm@0.1.0\x04\0\x0b\x11\x01\0\x0b\
+pulumi-wasm\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x07\
+0.201.0\x10wit-bindgen-rust\x060.20.0";
 
 #[inline(never)]
 #[doc(hidden)]

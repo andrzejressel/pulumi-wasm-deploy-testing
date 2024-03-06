@@ -12,6 +12,7 @@ use tonic::async_trait;
 use wasmtime::component::{Component, Instance, Linker, ResourceTable};
 use wasmtime::Store;
 use wasmtime_wasi::preview2::{WasiCtx, WasiCtxBuilder, WasiView};
+use std::io::prelude::*;
 
 pub struct Pulumi {
     plugin: Main,
@@ -41,14 +42,32 @@ struct MyState {
 
 #[async_trait]
 impl server::component::pulumi_wasm::external_world::Host for MyState {
+    async fn is_in_preview(&mut self) -> wasmtime::Result<bool> {
+        Ok(std::env::var("PULUMI_DRY_RUN").is_ok())
+    }
     async fn register_resource(&mut self, request: Vec<u8>) -> wasmtime::Result<Vec<u8>> {
-        let _result = self.register_async(request).await?;
-        Ok(vec![])
+        Ok(self.register_async(request).await?)
+    }
+}
+
+#[async_trait]
+impl crate::pulumi::server::component::pulumi_wasm::log::Host for MyState {
+    async fn log(&mut self, message: String) -> wasmtime::Result<()> {
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open("my-file")
+            .unwrap();
+
+        writeln!(file, "{:?}", message)?;
+        // println!("{}", message);
+        Ok(())
     }
 }
 
 impl MyState {
-    async fn register_async(&mut self, request: Vec<u8>) -> wasmtime::Result<()> {
+    async fn register_async(&mut self, request: Vec<u8>) -> wasmtime::Result<Vec<u8>> {
         use prost::Message;
         let engine_url = self
             .pulumi_monitor_url
@@ -60,7 +79,6 @@ impl MyState {
         let mut client = ResourceMonitorClient::connect(format!("tcp://{engine_url}")).await?;
 
         let result = client.register_resource(request).await?;
-        use std::io::prelude::*;
 
         let mut file = OpenOptions::new()
             .create(true)
@@ -71,7 +89,7 @@ impl MyState {
 
         writeln!(file, "{:?}", result).unwrap();
 
-        Ok(())
+        Ok(result.get_ref().encode_to_vec())
     }
 }
 

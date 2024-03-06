@@ -56,6 +56,68 @@ pub mod component {
                 }
             }
 
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn describe_outputs() -> _rt::String {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "describe-outputs"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<*mut u8>();
+                    let l2 = *ptr0.add(4).cast::<usize>();
+                    let len3 = l2;
+                    let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                    _rt::string_lift(bytes3)
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn non_done_exists() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "non-done-exists"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn combine_outputs() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "combine-outputs"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
             impl Output {
                 #[allow(unused_unsafe, clippy::all)]
                 pub fn new(value: &[u8]) -> Self {
@@ -139,6 +201,58 @@ pub mod component {
                             }
                             _ => _rt::invalid_enum_discriminant(),
                         }
+                    }
+                }
+            }
+            impl Output {
+                #[allow(unused_unsafe, clippy::all)]
+                pub fn get_field(&self, field: &str) -> Output {
+                    unsafe {
+                        let vec0 = field;
+                        let ptr0 = vec0.as_ptr().cast::<u8>();
+                        let len0 = vec0.len();
+
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                        extern "C" {
+                            #[link_name = "[method]output.get-field"]
+                            fn wit_import(_: i32, _: *mut u8, _: usize) -> i32;
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8, _: usize) -> i32 {
+                            unreachable!()
+                        }
+                        let ret = wit_import((self).handle() as i32, ptr0.cast_mut(), len0);
+                        Output::from_handle(ret as u32)
+                    }
+                }
+            }
+            impl Output {
+                #[allow(unused_unsafe, clippy::all)]
+                pub fn get_type(&self) -> _rt::String {
+                    unsafe {
+                        #[repr(align(4))]
+                        struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                        let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                        let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                        extern "C" {
+                            #[link_name = "[method]output.get-type"]
+                            fn wit_import(_: i32, _: *mut u8);
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8) {
+                            unreachable!()
+                        }
+                        wit_import((self).handle() as i32, ptr0);
+                        let l1 = *ptr0.add(0).cast::<*mut u8>();
+                        let l2 = *ptr0.add(4).cast::<usize>();
+                        let len3 = l2;
+                        let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                        _rt::string_lift(bytes3)
                     }
                 }
             }
@@ -260,7 +374,26 @@ mod _rt {
             }
         }
     }
+    pub use alloc_crate::string::String;
     pub use alloc_crate::vec::Vec;
+    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
+        if cfg!(debug_assertions) {
+            String::from_utf8(bytes).unwrap()
+        } else {
+            String::from_utf8_unchecked(bytes)
+        }
+    }
+    pub unsafe fn bool_lift(val: u8) -> bool {
+        if cfg!(debug_assertions) {
+            match val {
+                0 => false,
+                1 => true,
+                _ => panic!("invalid bool discriminant"),
+            }
+        } else {
+            ::core::mem::transmute::<u8, bool>(val)
+        }
+    }
     pub unsafe fn invalid_enum_discriminant<T>() -> T {
         if cfg!(debug_assertions) {
             panic!("invalid enum discriminant")
@@ -274,16 +407,19 @@ mod _rt {
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:pulumi-rust:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 414] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\x9c\x02\x01A\x02\x01\
-A\x02\x01B\x0d\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 571] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xb9\x03\x01A\x02\x01\
+A\x02\x01B\x16\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
 \0\x13[constructor]output\x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\
 \x02\x04\0\x12[method]output.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\
-\0\x12[method]output.get\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]out\
-put.duplicate\x01\x08\x03\x01,component:pulumi-wasm/output-interface@0.1.0\x05\0\
-\x04\x01'component:pulumi-wasm/pulumi-rust@0.1.0\x04\0\x0b\x11\x01\0\x0bpulumi-r\
-ust\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x070.201.0\x10\
-wit-bindgen-rust\x060.20.0";
+\0\x12[method]output.get\x01\x07\x01@\x02\x04self\x04\x05fields\0\x02\x04\0\x18[\
+method]output.get-field\x01\x08\x01@\x01\x04self\x04\0s\x04\0\x17[method]output.\
+get-type\x01\x09\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]output.duplicate\x01\
+\x0a\x01@\0\0s\x04\0\x10describe-outputs\x01\x0b\x01@\0\0\x7f\x04\0\x0fnon-done-\
+exists\x01\x0c\x04\0\x0fcombine-outputs\x01\x0c\x03\x01,component:pulumi-wasm/ou\
+tput-interface@0.1.0\x05\0\x04\x01'component:pulumi-wasm/pulumi-rust@0.1.0\x04\0\
+\x0b\x11\x01\0\x0bpulumi-rust\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0d\
+wit-component\x070.201.0\x10wit-bindgen-rust\x060.20.0";
 
 #[inline(never)]
 #[doc(hidden)]

@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/virtuslab/besom/language-host/executors"
-	"github.com/virtuslab/besom/language-host/fsys"
+	"github.com/andrzejressel/pulumi-wasm/pulumi-language-wasm/executors"
+	"github.com/andrzejressel/pulumi-wasm/pulumi-language-wasm/fsys"
 
 	pbempty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
@@ -52,7 +52,7 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 	logging.InitLogging(false, 0, false)
-	cmdutil.InitTracing("pulumi-language-scala", "pulumi-language-scala", tracing)
+	cmdutil.InitTracing("pulumi-language-wasm", "pulumi-language-wasm", tracing)
 
 	wd, err := os.Getwd()
 	if err != nil {
@@ -65,7 +65,7 @@ func main() {
 	}
 	bootstrapLibJarPath := filepath.Join(filepath.Dir(execPath), "bootstrap.jar") // TODO: hardocoded jar name
 
-	scalaExecOptions := executors.WasmExecutorOptions{
+	wasmExecOptions := executors.WasmExecutorOptions{
 		Binary:              binary,
 		UseExecutor:         useExecutor,
 		WD:                  fsys.DirFS(wd),
@@ -95,7 +95,7 @@ func main() {
 	handle, err := rpcutil.ServeWithOptions(rpcutil.ServeOptions{
 		Cancel: cancelChannel,
 		Init: func(srv *grpc.Server) error {
-			host := newLanguageHost(scalaExecOptions, engineAddress, tracing)
+			host := newLanguageHost(wasmExecOptions, engineAddress, tracing)
 			pulumirpc.RegisterLanguageRuntimeServer(srv, host)
 			return nil
 		},
@@ -114,9 +114,9 @@ func main() {
 	}
 }
 
-// scalaLanguageHost implements the LanguageRuntimeServer interface
+// wasmLanguageHost implements the LanguageRuntimeServer interface
 // for use as an API endpoint.
-type scalaLanguageHost struct {
+type wasmLanguageHost struct {
 	pulumirpc.UnimplementedLanguageRuntimeServer
 
 	currentExecutor *executors.WasmExecutor
@@ -127,17 +127,17 @@ type scalaLanguageHost struct {
 
 func newLanguageHost(execOptions executors.WasmExecutorOptions,
 	engineAddress, tracing string,
-) /* pulumirpc.LanguageRuntimeServer */ *scalaLanguageHost {
-	return &scalaLanguageHost{
+) *wasmLanguageHost {
+	return &wasmLanguageHost{
 		execOptions:   execOptions,
 		engineAddress: engineAddress,
 		tracing:       tracing,
 	}
 }
 
-func (host *scalaLanguageHost) Executor() (*executors.WasmExecutor, error) {
+func (host *wasmLanguageHost) Executor() (*executors.WasmExecutor, error) {
 	if host.currentExecutor == nil {
-		executor, err := executors.NewScalaExecutor(host.execOptions)
+		executor, err := executors.NewWasmExecutor(host.execOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -148,7 +148,7 @@ func (host *scalaLanguageHost) Executor() (*executors.WasmExecutor, error) {
 }
 
 // GetRequiredPlugins computes the complete set of anticipated plugins required by a program.
-func (host *scalaLanguageHost) GetRequiredPlugins(
+func (host *wasmLanguageHost) GetRequiredPlugins(
 	ctx context.Context,
 	req *pulumirpc.GetRequiredPluginsRequest,
 ) (*pulumirpc.GetRequiredPluginsResponse, error) {
@@ -187,7 +187,7 @@ func (host *scalaLanguageHost) GetRequiredPlugins(
 	return &pulumirpc.GetRequiredPluginsResponse{Plugins: plugins}, nil
 }
 
-func (host *scalaLanguageHost) determinePulumiPackages(
+func (host *wasmLanguageHost) determinePulumiPackages(
 	ctx context.Context,
 ) ([]plugin.PulumiPluginJSON, error) {
 	logging.V(3).Infof("GetRequiredPlugins: Determining Pulumi plugins")
@@ -232,7 +232,7 @@ type hostCommandOutput struct {
 	stderr string
 }
 
-func (host *scalaLanguageHost) runHostCommand(
+func (host *wasmLanguageHost) runHostCommand(
 	ctx context.Context, dir, name string, args []string, quiet bool, combineOutput bool,
 ) (hostCommandOutput, error) {
 	commandStr := strings.Join(args, " ")
@@ -275,7 +275,7 @@ func (host *scalaLanguageHost) runHostCommand(
 }
 
 // Run is an RPC endpoint for LanguageRuntimeServer::Run
-func (host *scalaLanguageHost) Run(ctx context.Context, req *pulumirpc.RunRequest) (*pulumirpc.RunResponse, error) {
+func (host *wasmLanguageHost) Run(ctx context.Context, req *pulumirpc.RunRequest) (*pulumirpc.RunResponse, error) {
 	logging.V(5).Infof("Run: program=%v", req.GetProgram())
 
 	config, err := host.constructConfig(req)
@@ -333,7 +333,7 @@ func (host *scalaLanguageHost) Run(ctx context.Context, req *pulumirpc.RunReques
 // constructEnv constructs an environ for `pulumi-language-scala`
 // by enumerating all the optional and non-optional evn vars present
 // in a RunRequest.
-func (host *scalaLanguageHost) constructEnv(req *pulumirpc.RunRequest, config, configSecretKeys string) []string {
+func (host *wasmLanguageHost) constructEnv(req *pulumirpc.RunRequest, config, configSecretKeys string) []string {
 	env := os.Environ()
 
 	maybeAppendEnv := func(k, v string) {
@@ -358,7 +358,7 @@ func (host *scalaLanguageHost) constructEnv(req *pulumirpc.RunRequest, config, c
 }
 
 // constructConfig json-serializes the configuration data given as part of a RunRequest.
-func (host *scalaLanguageHost) constructConfig(req *pulumirpc.RunRequest) (string, error) {
+func (host *wasmLanguageHost) constructConfig(req *pulumirpc.RunRequest) (string, error) {
 	configMap := req.GetConfig()
 	if configMap == nil {
 		return "", nil
@@ -374,7 +374,7 @@ func (host *scalaLanguageHost) constructConfig(req *pulumirpc.RunRequest) (strin
 
 // constructConfigSecretKeys JSON-serializes the list of keys that contain secret values given as part of
 // a RunRequest.
-func (host *scalaLanguageHost) constructConfigSecretKeys(req *pulumirpc.RunRequest) (string, error) {
+func (host *wasmLanguageHost) constructConfigSecretKeys(req *pulumirpc.RunRequest) (string, error) {
 	configSecretKeys := req.GetConfigSecretKeys()
 	if configSecretKeys == nil {
 		return "[]", nil
@@ -388,13 +388,13 @@ func (host *scalaLanguageHost) constructConfigSecretKeys(req *pulumirpc.RunReque
 	return string(configSecretKeysJSON), nil
 }
 
-func (host *scalaLanguageHost) GetPluginInfo(_ context.Context, _ *pbempty.Empty) (*pulumirpc.PluginInfo, error) {
+func (host *wasmLanguageHost) GetPluginInfo(_ context.Context, _ *pbempty.Empty) (*pulumirpc.PluginInfo, error) {
 	return &pulumirpc.PluginInfo{
 		Version: version.Version,
 	}, nil
 }
 
-func (host *scalaLanguageHost) InstallDependencies(req *pulumirpc.InstallDependenciesRequest,
+func (host *wasmLanguageHost) InstallDependencies(req *pulumirpc.InstallDependenciesRequest,
 	server pulumirpc.LanguageRuntime_InstallDependenciesServer,
 ) error {
 	executor, err := host.Executor()
@@ -433,14 +433,14 @@ func (host *scalaLanguageHost) InstallDependencies(req *pulumirpc.InstallDepende
 	return nil
 }
 
-func (host *scalaLanguageHost) GetProgramDependencies(
+func (host *wasmLanguageHost) GetProgramDependencies(
 	ctx context.Context, req *pulumirpc.GetProgramDependenciesRequest,
 ) (*pulumirpc.GetProgramDependenciesResponse, error) {
 	// TODO: Implement dependency fetcher
 	return &pulumirpc.GetProgramDependenciesResponse{}, nil
 }
 
-func (host *scalaLanguageHost) About(ctx context.Context, _ *emptypb.Empty) (*pulumirpc.AboutResponse, error) {
+func (host *wasmLanguageHost) About(ctx context.Context, _ *emptypb.Empty) (*pulumirpc.AboutResponse, error) {
 	metadata := make(map[string]string)
 
 	scalaExec, err := host.Executor()
@@ -448,7 +448,7 @@ func (host *scalaLanguageHost) About(ctx context.Context, _ *emptypb.Empty) (*pu
 		return nil, err
 	}
 
-	javaExec, err := executors.NewScalaExecutor(executors.WasmExecutorOptions{
+	javaExec, err := executors.NewWasmExecutor(executors.WasmExecutorOptions{
 		UseExecutor:         "jar",
 		WD:                  host.execOptions.WD,
 		BootstrapLibJarPath: host.execOptions.BootstrapLibJarPath,

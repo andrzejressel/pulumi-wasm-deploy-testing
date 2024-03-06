@@ -5,7 +5,7 @@ package executors
 import (
 	"fmt"
 
-	"github.com/virtuslab/besom/language-host/fsys"
+	"github.com/andrzejressel/pulumi-wasm/pulumi-language-wasm/fsys"
 )
 
 // WasmExecutor abstracts interactions with a wasm project, ability to build, run
@@ -20,7 +20,7 @@ type WasmExecutor struct {
 	// Optional dir to run the command in.
 	Dir string
 
-	// Command to run the Scala code - the main entrypoint.
+	// Command to run the Wasm code - the main entrypoint.
 	RunArgs []string
 
 	// Command args to resolve dependencies and build; this will
@@ -28,7 +28,7 @@ type WasmExecutor struct {
 	BuildArgs []string
 
 	// Command to autodetect and print Pulumi plugins depended on
-	// by the Scala program.
+	// by the Wasm program.
 	PluginArgs []string
 
 	// Command to print the version of the command.
@@ -59,7 +59,7 @@ type wasmExecutorFactory interface {
 	NewWasmExecutor(WasmExecutorOptions) (*WasmExecutor, error)
 }
 
-func NewScalaExecutor(opts WasmExecutorOptions) (*WasmExecutor, error) {
+func NewWasmExecutor(opts WasmExecutorOptions) (*WasmExecutor, error) {
 	e, err := combineWasmExecutorFactories(
 		&windows{},
 	).NewWasmExecutor(opts)
@@ -67,7 +67,7 @@ func NewScalaExecutor(opts WasmExecutorOptions) (*WasmExecutor, error) {
 		return nil, err
 	}
 	if e == nil {
-		return nil, fmt.Errorf("failed to configure executor, tried: jar, sbt, scala-cli")
+		return nil, fmt.Errorf("failed to configure executor, tried: entrypoint.bat")
 	}
 	return e, nil
 }

@@ -1,4 +1,4 @@
-module github.com/virtuslab/besom/language-host
+module github.com/andrzejressel/pulumi-wasm/pulumi-language-wasm
 
 go 1.20
 

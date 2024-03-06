@@ -3,7 +3,8 @@
 package executors
 
 import (
-	"github.com/virtuslab/besom/language-host/fsys"
+	"github.com/andrzejressel/pulumi-wasm/pulumi-language-wasm/fsys"
+	"runtime"
 )
 
 type windows struct{}
@@ -11,6 +12,9 @@ type windows struct{}
 var _ wasmExecutorFactory = &windows{}
 
 func (s windows) NewWasmExecutor(opts WasmExecutorOptions) (*WasmExecutor, error) {
+	if runtime.GOOS != "windows" {
+		return nil, nil
+	}
 	probePaths := []string{opts.UseExecutor}
 	if opts.UseExecutor == "" {
 		probePaths = []string{".\\entrypoint.bat"}

@@ -56,6 +56,68 @@ pub mod component {
                 }
             }
 
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn describe_outputs() -> _rt::String {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "describe-outputs"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<*mut u8>();
+                    let l2 = *ptr0.add(4).cast::<usize>();
+                    let len3 = l2;
+                    let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                    _rt::string_lift(bytes3)
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn non_done_exists() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "non-done-exists"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn combine_outputs() -> bool {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                    extern "C" {
+                        #[link_name = "combine-outputs"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    _rt::bool_lift(ret as u8)
+                }
+            }
             impl Output {
                 #[allow(unused_unsafe, clippy::all)]
                 pub fn new(value: &[u8]) -> Self {
@@ -144,6 +206,58 @@ pub mod component {
             }
             impl Output {
                 #[allow(unused_unsafe, clippy::all)]
+                pub fn get_field(&self, field: &str) -> Output {
+                    unsafe {
+                        let vec0 = field;
+                        let ptr0 = vec0.as_ptr().cast::<u8>();
+                        let len0 = vec0.len();
+
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                        extern "C" {
+                            #[link_name = "[method]output.get-field"]
+                            fn wit_import(_: i32, _: *mut u8, _: usize) -> i32;
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8, _: usize) -> i32 {
+                            unreachable!()
+                        }
+                        let ret = wit_import((self).handle() as i32, ptr0.cast_mut(), len0);
+                        Output::from_handle(ret as u32)
+                    }
+                }
+            }
+            impl Output {
+                #[allow(unused_unsafe, clippy::all)]
+                pub fn get_type(&self) -> _rt::String {
+                    unsafe {
+                        #[repr(align(4))]
+                        struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                        let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                        let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "component:pulumi-wasm/output-interface@0.1.0")]
+                        extern "C" {
+                            #[link_name = "[method]output.get-type"]
+                            fn wit_import(_: i32, _: *mut u8);
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8) {
+                            unreachable!()
+                        }
+                        wit_import((self).handle() as i32, ptr0);
+                        let l1 = *ptr0.add(0).cast::<*mut u8>();
+                        let l2 = *ptr0.add(4).cast::<usize>();
+                        let len3 = l2;
+                        let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                        _rt::string_lift(bytes3)
+                    }
+                }
+            }
+            impl Output {
+                #[allow(unused_unsafe, clippy::all)]
                 pub fn duplicate(&self) -> Output {
                     unsafe {
                         #[cfg(target_arch = "wasm32")]
@@ -185,9 +299,18 @@ pub mod component {
                         .finish()
                 }
             }
+            pub struct RandomStringResult {
+                pub result: Output,
+            }
+            impl ::core::fmt::Debug for RandomStringResult {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    f.debug_struct("RandomStringResult")
+                        .field("result", &self.result)
+                        .finish()
+                }
+            }
             #[allow(unused_unsafe, clippy::all)]
-            /// create-random-string: func(args: random-string-args) -> random-string-result;
-            pub fn create_random_string(args: &RandomStringArgs<'_>) {
+            pub fn create_random_string(args: &RandomStringArgs<'_>) -> RandomStringResult {
                 unsafe {
                     let RandomStringArgs {
                         name: name0,
@@ -203,14 +326,17 @@ pub mod component {
                     )]
                     extern "C" {
                         #[link_name = "create-random-string"]
-                        fn wit_import(_: *mut u8, _: usize, _: i32);
+                        fn wit_import(_: *mut u8, _: usize, _: i32) -> i32;
                     }
 
                     #[cfg(not(target_arch = "wasm32"))]
-                    fn wit_import(_: *mut u8, _: usize, _: i32) {
+                    fn wit_import(_: *mut u8, _: usize, _: i32) -> i32 {
                         unreachable!()
                     }
-                    wit_import(ptr1.cast_mut(), len1, (length0).handle() as i32);
+                    let ret = wit_import(ptr1.cast_mut(), len1, (length0).handle() as i32);
+                    RandomStringResult{
+            result: super::super::super::component::pulumi_wasm::output_interface::Output::from_handle(ret as u32),
+          }
                 }
             }
             #[allow(unused_unsafe, clippy::all)]
@@ -230,6 +356,178 @@ pub mod component {
                         unreachable!()
                     }
                     wit_import();
+                }
+            }
+        }
+
+        #[allow(clippy::all)]
+        pub mod function_reverse_callback {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            use super::super::super::_rt;
+            pub type Output = super::super::super::component::pulumi_wasm::output_interface::Output;
+            pub struct FunctionInvocationRequest {
+                pub id: Output,
+                pub function_id: _rt::String,
+                pub value: _rt::Vec<u8>,
+            }
+            impl ::core::fmt::Debug for FunctionInvocationRequest {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    f.debug_struct("FunctionInvocationRequest")
+                        .field("id", &self.id)
+                        .field("function-id", &self.function_id)
+                        .field("value", &self.value)
+                        .finish()
+                }
+            }
+            pub struct FunctionInvocationResult<'a> {
+                pub id: &'a Output,
+                pub value: _rt::Vec<u8>,
+            }
+            impl<'a> ::core::fmt::Debug for FunctionInvocationResult<'a> {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    f.debug_struct("FunctionInvocationResult")
+                        .field("id", &self.id)
+                        .field("value", &self.value)
+                        .finish()
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn get_functions(source: &str) -> _rt::Vec<FunctionInvocationRequest> {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                    let vec0 = source;
+                    let ptr0 = vec0.as_ptr().cast::<u8>();
+                    let len0 = vec0.len();
+                    let ptr1 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(
+                        wasm_import_module = "component:pulumi-wasm/function-reverse-callback@0.1.0"
+                    )]
+                    extern "C" {
+                        #[link_name = "get-functions"]
+                        fn wit_import(_: *mut u8, _: usize, _: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8, _: usize, _: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0.cast_mut(), len0, ptr1);
+                    let l2 = *ptr1.add(0).cast::<*mut u8>();
+                    let l3 = *ptr1.add(4).cast::<usize>();
+                    let base11 = l2;
+                    let len11 = l3;
+                    let mut result11 = _rt::Vec::with_capacity(len11);
+                    for i in 0..len11 {
+                        let base = base11.add(i * 20);
+                        let e11 = {
+                            let l4 = *base.add(0).cast::<i32>();
+                            let l5 = *base.add(4).cast::<*mut u8>();
+                            let l6 = *base.add(8).cast::<usize>();
+                            let len7 = l6;
+                            let bytes7 = _rt::Vec::from_raw_parts(l5.cast(), len7, len7);
+                            let l8 = *base.add(12).cast::<*mut u8>();
+                            let l9 = *base.add(16).cast::<usize>();
+                            let len10 = l9;
+
+                            FunctionInvocationRequest{
+                id: super::super::super::component::pulumi_wasm::output_interface::Output::from_handle(l4 as u32),
+                function_id: _rt::string_lift(bytes7),
+                value: _rt::Vec::from_raw_parts(l8.cast(), len10, len10),
+              }
+                        };
+                        result11.push(e11);
+                    }
+                    _rt::cabi_dealloc(base11, len11 * 20, 4);
+                    result11
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn set_functions(results: &[FunctionInvocationResult<'_>]) {
+                unsafe {
+                    let vec2 = results;
+                    let len2 = vec2.len();
+                    let layout2 = _rt::alloc::Layout::from_size_align_unchecked(vec2.len() * 12, 4);
+                    let result2 = if layout2.size() != 0 {
+                        let ptr = _rt::alloc::alloc(layout2).cast::<u8>();
+                        if ptr.is_null() {
+                            _rt::alloc::handle_alloc_error(layout2);
+                        }
+                        ptr
+                    } else {
+                        {
+                            ::core::ptr::null_mut()
+                        }
+                    };
+                    for (i, e) in vec2.into_iter().enumerate() {
+                        let base = result2.add(i * 12);
+                        {
+                            let FunctionInvocationResult {
+                                id: id0,
+                                value: value0,
+                            } = e;
+                            *base.add(0).cast::<i32>() = (id0).handle() as i32;
+                            let vec1 = value0;
+                            let ptr1 = vec1.as_ptr().cast::<u8>();
+                            let len1 = vec1.len();
+                            *base.add(8).cast::<usize>() = len1;
+                            *base.add(4).cast::<*mut u8>() = ptr1.cast_mut();
+                        }
+                    }
+
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(
+                        wasm_import_module = "component:pulumi-wasm/function-reverse-callback@0.1.0"
+                    )]
+                    extern "C" {
+                        #[link_name = "set-functions"]
+                        fn wit_import(_: *mut u8, _: usize);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8, _: usize) {
+                        unreachable!()
+                    }
+                    wit_import(result2, len2);
+                    if layout2.size() != 0 {
+                        _rt::alloc::dealloc(result2.cast(), layout2);
+                    }
+                }
+            }
+        }
+
+        #[allow(clippy::all)]
+        pub mod log {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn log(message: &str) {
+                unsafe {
+                    let vec0 = message;
+                    let ptr0 = vec0.as_ptr().cast::<u8>();
+                    let len0 = vec0.len();
+
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "component:pulumi-wasm/log@0.1.0")]
+                    extern "C" {
+                        #[link_name = "log"]
+                        fn wit_import(_: *mut u8, _: usize);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8, _: usize) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0.cast_mut(), len0);
                 }
             }
         }
@@ -368,7 +666,26 @@ mod _rt {
             }
         }
     }
+    pub use alloc_crate::string::String;
     pub use alloc_crate::vec::Vec;
+    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
+        if cfg!(debug_assertions) {
+            String::from_utf8(bytes).unwrap()
+        } else {
+            String::from_utf8_unchecked(bytes)
+        }
+    }
+    pub unsafe fn bool_lift(val: u8) -> bool {
+        if cfg!(debug_assertions) {
+            match val {
+                0 => false,
+                1 => true,
+                _ => panic!("invalid bool discriminant"),
+            }
+        } else {
+            ::core::mem::transmute::<u8, bool>(val)
+        }
+    }
     pub unsafe fn invalid_enum_discriminant<T>() -> T {
         if cfg!(debug_assertions) {
             panic!("invalid enum discriminant")
@@ -376,7 +693,14 @@ mod _rt {
             core::hint::unreachable_unchecked()
         }
     }
-    pub use alloc_crate::string::String;
+    pub unsafe fn cabi_dealloc(ptr: *mut u8, size: usize, align: usize) {
+        if size == 0 {
+            return;
+        }
+        let layout = alloc::Layout::from_size_align_unchecked(size, align);
+        alloc::dealloc(ptr as *mut u8, layout);
+    }
+    pub use alloc_crate::alloc;
     extern crate alloc as alloc_crate;
 }
 
@@ -411,23 +735,33 @@ pub(crate) use __export_new_main_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:new-main:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 759] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xf8\x04\x01A\x02\x01\
-A\x07\x01B\x0d\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 1234] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xd3\x08\x01A\x02\x01\
+A\x0b\x01B\x16\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
 \0\x13[constructor]output\x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\
 \x02\x04\0\x12[method]output.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\
-\0\x12[method]output.get\x01\x07\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]out\
-put.duplicate\x01\x08\x03\x01,component:pulumi-wasm/output-interface@0.1.0\x05\0\
-\x02\x03\0\0\x06output\x01B\x10\x02\x03\x02\x01\x01\x04\0\x06output\x03\0\0\x01k\
-y\x01h\x01\x01k\x03\x01q\x02\x07literal\x01\x02\0\x03res\x01\x04\0\x04\0\x0aeith\
-er-u32\x03\0\x05\x01r\x02\x04names\x06length\x03\x04\0\x12random-string-args\x03\
-\0\x07\x01i\x01\x01r\x02\x03url\x09\x06result\x09\x04\0\x14random-string-result\x03\
-\0\x0a\x01@\x01\x04args\x08\x01\0\x04\0\x14create-random-string\x01\x0c\x01@\0\x01\
-\0\x04\0\x10handle-functions\x01\x0d\x03\x01<component:pulumi-wasm/pulumi-provid\
-er-random-interface@0.1.0\x05\x02\x01B\x02\x01@\0\x01\0\x04\0\x04main\x01\0\x04\x01\
-'component:pulumi-wasm/pulumi-main@0.1.0\x05\x03\x04\x01$component:pulumi-wasm/n\
-ew-main@0.1.0\x04\0\x0b\x0e\x01\0\x08new-main\x03\0\0\0G\x09producers\x01\x0cpro\
-cessed-by\x02\x0dwit-component\x070.201.0\x10wit-bindgen-rust\x060.20.0";
+\0\x12[method]output.get\x01\x07\x01@\x02\x04self\x04\x05fields\0\x02\x04\0\x18[\
+method]output.get-field\x01\x08\x01@\x01\x04self\x04\0s\x04\0\x17[method]output.\
+get-type\x01\x09\x01@\x01\x04self\x04\0\x02\x04\0\x18[method]output.duplicate\x01\
+\x0a\x01@\0\0s\x04\0\x10describe-outputs\x01\x0b\x01@\0\0\x7f\x04\0\x0fnon-done-\
+exists\x01\x0c\x04\0\x0fcombine-outputs\x01\x0c\x03\x01,component:pulumi-wasm/ou\
+tput-interface@0.1.0\x05\0\x02\x03\0\0\x06output\x01B\x10\x02\x03\x02\x01\x01\x04\
+\0\x06output\x03\0\0\x01ky\x01h\x01\x01k\x03\x01q\x02\x07literal\x01\x02\0\x03re\
+s\x01\x04\0\x04\0\x0aeither-u32\x03\0\x05\x01r\x02\x04names\x06length\x03\x04\0\x12\
+random-string-args\x03\0\x07\x01i\x01\x01r\x01\x06result\x09\x04\0\x14random-str\
+ing-result\x03\0\x0a\x01@\x01\x04args\x08\0\x0b\x04\0\x14create-random-string\x01\
+\x0c\x01@\0\x01\0\x04\0\x10handle-functions\x01\x0d\x03\x01<component:pulumi-was\
+m/pulumi-provider-random-interface@0.1.0\x05\x02\x01B\x0f\x02\x03\x02\x01\x01\x04\
+\0\x06output\x03\0\0\x01i\x01\x01p}\x01r\x03\x02id\x02\x0bfunction-ids\x05value\x03\
+\x04\0\x1bfunction-invocation-request\x03\0\x04\x01h\x01\x01r\x02\x02id\x06\x05v\
+alue\x03\x04\0\x1afunction-invocation-result\x03\0\x07\x01p\x05\x01@\x01\x06sour\
+ces\0\x09\x04\0\x0dget-functions\x01\x0a\x01p\x08\x01@\x01\x07results\x0b\x01\0\x04\
+\0\x0dset-functions\x01\x0c\x03\x015component:pulumi-wasm/function-reverse-callb\
+ack@0.1.0\x05\x03\x01B\x02\x01@\x01\x07messages\x01\0\x04\0\x03log\x01\0\x03\x01\
+\x1fcomponent:pulumi-wasm/log@0.1.0\x05\x04\x01B\x02\x01@\0\x01\0\x04\0\x04main\x01\
+\0\x04\x01'component:pulumi-wasm/pulumi-main@0.1.0\x05\x05\x04\x01$component:pul\
+umi-wasm/new-main@0.1.0\x04\0\x0b\x0e\x01\0\x08new-main\x03\0\0\0G\x09producers\x01\
+\x0cprocessed-by\x02\x0dwit-component\x070.201.0\x10wit-bindgen-rust\x060.20.0";
 
 #[inline(never)]
 #[doc(hidden)]

@@ -19,6 +19,14 @@ impl<T> Output<T> {
         &self.future
     }
 
+    pub unsafe fn new_from_handle<F: serde::Serialize>(handle: u32) -> Output<F> {
+        let output = output_interface::Output::from_handle(handle);
+        Output {
+            phantom: PhantomData::<F>::default(),
+            future: output,
+        }
+    }
+
     pub fn new<F: serde::Serialize>(value: &F) -> Self {
         let binding = rmp_serde::to_vec(value).unwrap();
         let arg = binding.as_slice();

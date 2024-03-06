@@ -4,6 +4,7 @@ world pulumi-wasm {
     export output-interface;
     export register-interface;
     export function-reverse-callback;
+    import log;
 
     import external-world;
 }
@@ -11,11 +12,14 @@ world pulumi-wasm {
 world main {
     export pulumi-main;
     import external-world;
+    import log;
 }
 
 world new-main {
     import pulumi-provider-random-interface;
     import output-interface;
+    import function-reverse-callback;
+    import log;
     export pulumi-main;
 }
 
@@ -30,11 +34,22 @@ world pulumi-rust {
     import output-interface;
 }
 
+interface log {
+    log: func(message: string);
+}
+
 interface output-interface {
+
+    describe-outputs: func() -> string;
+    non-done-exists: func() -> bool;
+    combine-outputs: func() -> bool;
+
     resource output {
         constructor(value: list<u8>);
         map: func(function-name: string) -> output;
         get: func() -> option<list<u8>>;
+        get-field: func(field: string) -> output;
+        get-type: func() -> string;
         duplicate: func() -> output;
     }
 }
@@ -43,21 +58,21 @@ interface register-interface {
     use output-interface.{output};
 
     record object-field {
-       // name: list<u8>, //FIXME: String does not work
-        object: borrow<output>
+        name: string,
+        value: borrow<output>
     }
 
     record register-resource-request {
         %type: string,
         name: string,
-        object-names: list<string>,
         object: list<object-field>,
     }
 
-    register: func(request: register-resource-request);
+    register: func(request: register-resource-request) -> output;
 }
 
 interface external-world {
+    is-in-preview: func() -> bool;
     register-resource: func(request: list<u8>) -> list<u8>;
 }
 
@@ -76,12 +91,10 @@ interface pulumi-provider-random-interface {
     }
 
     record random-string-result {
-        url: output,
         %result: output
     }
 
-   // create-random-string: func(args: random-string-args) -> random-string-result;
-    create-random-string: func(args: random-string-args);
+    create-random-string: func(args: random-string-args) -> random-string-result;
 
     handle-functions: func();
 }
