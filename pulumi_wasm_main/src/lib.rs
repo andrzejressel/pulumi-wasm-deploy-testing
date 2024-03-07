@@ -1,10 +1,11 @@
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use anyhow::Error;
+use log::info;
 use pulumi_rust_wasm::HASHMAP;
 use crate::bindings::exports::component::pulumi_wasm::pulumi_main::Guest;
 
 use pulumi_rust_wasm::output::Output;
 use crate::bindings::component::pulumi_wasm::function_reverse_callback::{FunctionInvocationRequest, FunctionInvocationResult, get_functions, set_functions};
-use crate::bindings::component::pulumi_wasm::log::log;
 use crate::bindings::component::pulumi_wasm::output_interface::{combine_outputs, describe_outputs, non_done_exists};
 use crate::random::*;
 
@@ -17,6 +18,8 @@ struct Component {}
 
 impl Guest for Component {
     fn main() {
+        wasm_common::setup_logger();
+
         let length: Output<i32> = Output::new(&4).map(|i: i32| i * 2);
 
         let v = create_random_string(RandomStringArgs {
@@ -33,7 +36,7 @@ impl Guest for Component {
 
         run_loop().unwrap();
 
-        log(describe_outputs().as_str());
+        info!("{}", describe_outputs());
 
         if non_done_exists() {
             eprintln!("Non done exists");
@@ -59,11 +62,11 @@ fn run_all_function(
     let functions = get_functions("source");
 
     if functions.is_empty() {
-        log("Functions are empty");
+        info!("Functions are empty");
         return Ok(false)
     }
 
-    log("Functions are not empty");
+    info!("Functions are not empty");
 
     let mut functions_map = HASHMAP.lock().unwrap();
 

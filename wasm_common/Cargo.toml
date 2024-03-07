@@ -1,0 +1,18 @@
+[package]
+name = "wasm_common"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log.workspace = true
+uuid.workspace = true
+wit-bindgen-rt.workspace = true
+
+[package.metadata.component]
+package = "component:logger"
+
+[package.metadata.component.target]
+path = "../wits/world.wit"
+world = "logger"

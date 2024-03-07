@@ -25,6 +25,8 @@ serde.workspace = true
 tonic.workspace = true
 serde_json.workspace = true
 pulumi_rust_wasm = { path = "../pulumi_rust_wasm" }
+log.workspace = true
+wasm_common = { path = "../wasm_common" }
 
 [dev-dependencies]
 wasmtime.workspace = true

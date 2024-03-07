@@ -9,7 +9,7 @@ edition = "2021"
 tonic-web.workspace = true
 prost.workspace = true
 prost-types.workspace = true
-tonic.workspace = true
+tonic = { workspace = true, default-features = true }
 log.workspace = true
 uuid.workspace = true
 tracing-subscriber.workspace = true
@@ -21,14 +21,7 @@ rmp-serde.workspace = true
 serde_json.workspace = true
 futures.workspace = true
 async-trait.workspace = true
+regex.workspace = true
 
 [build-dependencies]
 tonic-build.workspace = true
-
-#
-#[package.metadata.component]
-#package = "component:pulumi-wasm"
-#
-#[package.metadata.component.target]
-#path = "../wits/world.wit"
-#world = "pulumi-wasm"

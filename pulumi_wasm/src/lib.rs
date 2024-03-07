@@ -4,6 +4,7 @@ use std::fmt::Formatter;
 use std::ops::Deref;
 use futures::SinkExt;
 use lazy_static::lazy_static;
+use log::{info, log};
 use prost::Message;
 use prost_types::value::Kind;
 use rmpv::{Utf8String, Value};
@@ -35,6 +36,7 @@ impl output_interface::Guest for Component {
     type Output = Output;
 
     fn describe_outputs() -> String {
+        wasm_common::setup_logger();
         let outputs = access_map()
             .iter()
             .map(|o| {
@@ -49,6 +51,7 @@ impl output_interface::Guest for Component {
     }
 
     fn non_done_exists() -> bool {
+        wasm_common::setup_logger();
         for o in access_map() {
             let ref_cell = o.borrow();
             let content = ref_cell.deref();
@@ -63,6 +66,7 @@ impl output_interface::Guest for Component {
     }
 
     fn combine_outputs() -> bool {
+        wasm_common::setup_logger();
         let outputs = access_map();
         let mut changed = false;
 
@@ -72,7 +76,7 @@ impl output_interface::Guest for Component {
 
             let new_value = match content {
                 OutputContent::Func(refcells, f) => {
-                    log("Found func");
+                    info!("Found func");
                     let data = refcells.iter().flat_map(|r| {
                         let ref_cell = r.borrow();
                         let content = ref_cell.deref();
@@ -85,10 +89,10 @@ impl output_interface::Guest for Component {
                     }).collect::<Vec<_>>();
 
                     if (data.len() == refcells.len()) {
-                        log("Map");
+                        info!("Map");
                         Some(f(data))
                     } else {
-                        log("Cannot map");
+                        info!("Cannot map");
                         None
                     }
                 }
@@ -125,12 +129,14 @@ impl Debug for Output {
 
 impl GuestOutput for Output {
     fn new(value: Vec<u8>) -> Self {
+        wasm_common::setup_logger();
         let value = rmpv::decode::read_value(&mut value.as_slice()).unwrap();
         let cell = output::create_new(value);
         Output { output: cell, tags: vec![] }
     }
 
     fn map(&self, function_name: String) -> WasmOutput {
+        wasm_common::setup_logger();
         let function_id = FunctionId::from_string(&function_name);
         let function_source = FunctionSource::from_str("source");
         let output = output::map_external(function_id, function_source, self.output.clone());
@@ -138,6 +144,7 @@ impl GuestOutput for Output {
     }
 
     fn get(&self) -> Option<Vec<u8>> {
+        wasm_common::setup_logger();
         let ref_cell = self.output.borrow();
         let content = ref_cell.deref();
 
@@ -154,6 +161,7 @@ impl GuestOutput for Output {
     }
 
     fn get_field(&self, field: String) -> WasmOutput {
+        wasm_common::setup_logger();
         let o = output::map_internal(vec![self.output.clone()], move |v| {
             let v = v[0].clone();
 
@@ -184,6 +192,7 @@ impl GuestOutput for Output {
     }
 
     fn get_type(&self) -> String {
+        wasm_common::setup_logger();
         let ref_cell = self.output.borrow();
         let content = ref_cell.deref();
         match content {
@@ -195,6 +204,7 @@ impl GuestOutput for Output {
     }
 
     fn duplicate(&self) -> WasmOutput {
+        wasm_common::setup_logger();
         WasmOutput::new(Output {
             output: self.output.clone(),
             tags: self.tags.clone(),
@@ -204,6 +214,7 @@ impl GuestOutput for Output {
 
 impl function_reverse_callback::Guest for Component {
     fn get_functions(source: String) -> Vec<FunctionInvocationRequest> {
+        wasm_common::setup_logger();
         let function_source = &FunctionSource::from_string(&source);
         access_map()
             .iter()
@@ -212,10 +223,10 @@ impl function_reverse_callback::Guest for Component {
 
                 match f1 {
                     OutputContent::Mapped(id, s, prev) if s == function_source => {
-                        log("Found mapped");
+                        info!("Found mapped");
                         match &*prev.borrow() {
                             OutputContent::Done(v) => {
-                                log("Found value");
+                                info!("Found value");
                                 let mut vec = vec![];
                                 rmpv::encode::write_value(&mut vec, v).unwrap();
                                 Some(FunctionInvocationRequest {
@@ -227,7 +238,7 @@ impl function_reverse_callback::Guest for Component {
                             OutputContent::Mapped(_, _, _)
                             | OutputContent::Func(_, _)
                             | OutputContent::Nothing => {
-                                log("Value not found");
+                                info!("Value not found");
                                 None
                             },
                         }
@@ -242,6 +253,7 @@ impl function_reverse_callback::Guest for Component {
     }
 
     fn set_functions(results: Vec<FunctionInvocationResult>) {
+        wasm_common::setup_logger();
         for x in results {
             let value = rmpv::decode::read_value(&mut x.value.as_slice()).unwrap();
             let borrowed = &x.id.get::<Output>().output;
@@ -264,6 +276,7 @@ fn messagepack_to_protoc(v: &Value) -> prost_types::Value {
 
 impl register_interface::Guest for Component {
     fn register(request: RegisterResourceRequest) -> WasmOutput {
+        wasm_common::setup_logger();
 
         let values = request.object.iter().map(|o| o.value.get::<Output>().output.clone()).collect::<Vec<_>>();
         let names = request.object.iter().map(|o| o.name.clone()).collect::<Vec<_>>();
@@ -321,7 +334,7 @@ impl register_interface::Guest for Component {
 
             let result = grpc::RegisterResourceResponse::decode(&mut result_vec.as_slice()).unwrap();
 
-            log(format!("Result: {:?}", result).as_str());
+            info!("Result: {result:?}");
 
             let result = if (!is_in_preview()) {
                 let result = result.object.unwrap().fields.get("result").unwrap().clone().kind.unwrap();

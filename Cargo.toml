@@ -7,24 +7,22 @@ edition = "2021"
 
 [dependencies]
 pulumi_rust = { path = "pulumi_rust" }
-tokio = { version = "1.36.0", features = ["sync", "macros", "io-util", "rt", "time"] }
-futures = "0.3.30"
-log = "0.4"
-anyhow = "1.0.79"
-tonic = "0.11.0"
-object = "0.32.2"
-prost-types = "0.12.3"
-clap = { version = "4.5.1", features = ["derive"] }
+tokio.workspace = true
+log.workspace = true
+anyhow.workspace = true
+tonic = { workspace = true, default-features = true }
+prost-types.workspace = true
+clap.workspace = true
 log4rs.workspace = true
 
 [workspace]
-
 members = [
     "pulumi_rust",
     "pulumi_wasm",
     "pulumi_wasm_random",
     "pulumi_wasm_main",
     "pulumi_rust_wasm",
+    "wasm_common"
 ]
 
 [workspace.dependencies]
@@ -48,6 +46,9 @@ wasmtime-wasi = "18.0.2"
 tonic-build = "0.11.0"
 async-trait = "0.1.77"
 tonic-web = "0.11.0"
-log = { version = "0.4.21", features = [] }
+log = { version = "0.4.21", features = ["kv"] }
 tracing-subscriber = "0.3.18"
 log4rs = "1.3.0"
+tokio = { version = "1.36.0", features = ["sync", "macros", "io-util", "rt", "time"] }
+clap = { version = "4.5.1", features = ["derive"] }
+regex = "1.10.3"

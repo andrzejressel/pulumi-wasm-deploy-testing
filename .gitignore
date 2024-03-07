@@ -20,7 +20,7 @@ devenv.local.nix
 /composed1.wat
 /composed2.wat
 /my-file
-/pulumi-language-wasm/language-host.exe
+/pulumi-language-wasm/pulumi-language-wasm.exe
 
 .idea/
 

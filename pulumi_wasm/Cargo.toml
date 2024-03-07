@@ -24,6 +24,8 @@ rmpv.workspace = true
 serde.workspace = true
 tonic.workspace = true
 serde_json.workspace = true
+wasm_common = { path = "../wasm_common" }
+log.workspace = true
 
 [build-dependencies]
 tonic-build.workspace = true

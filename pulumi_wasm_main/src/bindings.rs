@@ -509,25 +509,206 @@ pub mod component {
             #[cfg(target_arch = "wasm32")]
             static __FORCE_SECTION_REF: fn() =
                 super::super::super::__link_custom_section_describing_imports;
+            use super::super::super::_rt;
+            #[repr(u8)]
+            #[derive(Clone, Copy, Eq, PartialEq)]
+            pub enum Level {
+                Trace,
+                Debug,
+                Info,
+                Warn,
+                Error,
+            }
+            impl ::core::fmt::Debug for Level {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    match self {
+                        Level::Trace => f.debug_tuple("Level::Trace").finish(),
+                        Level::Debug => f.debug_tuple("Level::Debug").finish(),
+                        Level::Info => f.debug_tuple("Level::Info").finish(),
+                        Level::Warn => f.debug_tuple("Level::Warn").finish(),
+                        Level::Error => f.debug_tuple("Level::Error").finish(),
+                    }
+                }
+            }
+
+            impl Level {
+                pub(crate) unsafe fn _lift(val: u8) -> Level {
+                    if !cfg!(debug_assertions) {
+                        return ::core::mem::transmute(val);
+                    }
+
+                    match val {
+                        0 => Level::Trace,
+                        1 => Level::Debug,
+                        2 => Level::Info,
+                        3 => Level::Warn,
+                        4 => Level::Error,
+
+                        _ => panic!("invalid enum discriminant"),
+                    }
+                }
+            }
+
+            #[derive(Clone)]
+            pub struct Content {
+                pub level: Level,
+                pub target: _rt::String,
+                pub args: _rt::String,
+                pub module_path: Option<_rt::String>,
+                pub file: Option<_rt::String>,
+                pub line: Option<u32>,
+                pub key_values: _rt::Vec<(_rt::String, _rt::String)>,
+            }
+            impl ::core::fmt::Debug for Content {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    f.debug_struct("Content")
+                        .field("level", &self.level)
+                        .field("target", &self.target)
+                        .field("args", &self.args)
+                        .field("module-path", &self.module_path)
+                        .field("file", &self.file)
+                        .field("line", &self.line)
+                        .field("key-values", &self.key_values)
+                        .finish()
+                }
+            }
             #[allow(unused_unsafe, clippy::all)]
-            pub fn log(message: &str) {
+            pub fn log(content: &Content) {
                 unsafe {
-                    let vec0 = message;
-                    let ptr0 = vec0.as_ptr().cast::<u8>();
-                    let len0 = vec0.len();
+                    let Content {
+                        level: level0,
+                        target: target0,
+                        args: args0,
+                        module_path: module_path0,
+                        file: file0,
+                        line: line0,
+                        key_values: key_values0,
+                    } = content;
+                    let vec1 = target0;
+                    let ptr1 = vec1.as_ptr().cast::<u8>();
+                    let len1 = vec1.len();
+                    let vec2 = args0;
+                    let ptr2 = vec2.as_ptr().cast::<u8>();
+                    let len2 = vec2.len();
+                    let (result4_0, result4_1, result4_2) = match module_path0 {
+                        Some(e) => {
+                            let vec3 = e;
+                            let ptr3 = vec3.as_ptr().cast::<u8>();
+                            let len3 = vec3.len();
+
+                            (1i32, ptr3.cast_mut(), len3)
+                        }
+                        None => (0i32, ::core::ptr::null_mut(), 0usize),
+                    };
+                    let (result6_0, result6_1, result6_2) = match file0 {
+                        Some(e) => {
+                            let vec5 = e;
+                            let ptr5 = vec5.as_ptr().cast::<u8>();
+                            let len5 = vec5.len();
+
+                            (1i32, ptr5.cast_mut(), len5)
+                        }
+                        None => (0i32, ::core::ptr::null_mut(), 0usize),
+                    };
+                    let (result7_0, result7_1) = match line0 {
+                        Some(e) => (1i32, _rt::as_i32(e)),
+                        None => (0i32, 0i32),
+                    };
+                    let vec11 = key_values0;
+                    let len11 = vec11.len();
+                    let layout11 =
+                        _rt::alloc::Layout::from_size_align_unchecked(vec11.len() * 16, 4);
+                    let result11 = if layout11.size() != 0 {
+                        let ptr = _rt::alloc::alloc(layout11).cast::<u8>();
+                        if ptr.is_null() {
+                            _rt::alloc::handle_alloc_error(layout11);
+                        }
+                        ptr
+                    } else {
+                        {
+                            ::core::ptr::null_mut()
+                        }
+                    };
+                    for (i, e) in vec11.into_iter().enumerate() {
+                        let base = result11.add(i * 16);
+                        {
+                            let (t8_0, t8_1) = e;
+                            let vec9 = t8_0;
+                            let ptr9 = vec9.as_ptr().cast::<u8>();
+                            let len9 = vec9.len();
+                            *base.add(4).cast::<usize>() = len9;
+                            *base.add(0).cast::<*mut u8>() = ptr9.cast_mut();
+                            let vec10 = t8_1;
+                            let ptr10 = vec10.as_ptr().cast::<u8>();
+                            let len10 = vec10.len();
+                            *base.add(12).cast::<usize>() = len10;
+                            *base.add(8).cast::<*mut u8>() = ptr10.cast_mut();
+                        }
+                    }
 
                     #[cfg(target_arch = "wasm32")]
                     #[link(wasm_import_module = "component:pulumi-wasm/log@0.1.0")]
                     extern "C" {
                         #[link_name = "log"]
-                        fn wit_import(_: *mut u8, _: usize);
+                        fn wit_import(
+                            _: i32,
+                            _: *mut u8,
+                            _: usize,
+                            _: *mut u8,
+                            _: usize,
+                            _: i32,
+                            _: *mut u8,
+                            _: usize,
+                            _: i32,
+                            _: *mut u8,
+                            _: usize,
+                            _: i32,
+                            _: i32,
+                            _: *mut u8,
+                            _: usize,
+                        );
                     }
 
                     #[cfg(not(target_arch = "wasm32"))]
-                    fn wit_import(_: *mut u8, _: usize) {
+                    fn wit_import(
+                        _: i32,
+                        _: *mut u8,
+                        _: usize,
+                        _: *mut u8,
+                        _: usize,
+                        _: i32,
+                        _: *mut u8,
+                        _: usize,
+                        _: i32,
+                        _: *mut u8,
+                        _: usize,
+                        _: i32,
+                        _: i32,
+                        _: *mut u8,
+                        _: usize,
+                    ) {
                         unreachable!()
                     }
-                    wit_import(ptr0.cast_mut(), len0);
+                    wit_import(
+                        level0.clone() as i32,
+                        ptr1.cast_mut(),
+                        len1,
+                        ptr2.cast_mut(),
+                        len2,
+                        result4_0,
+                        result4_1,
+                        result4_2,
+                        result6_0,
+                        result6_1,
+                        result6_2,
+                        result7_0,
+                        result7_1,
+                        result11,
+                        len11,
+                    );
+                    if layout11.size() != 0 {
+                        _rt::alloc::dealloc(result11.cast(), layout11);
+                    }
                 }
             }
         }
@@ -701,6 +882,76 @@ mod _rt {
         alloc::dealloc(ptr as *mut u8, layout);
     }
     pub use alloc_crate::alloc;
+
+    pub fn as_i32<T: AsI32>(t: T) -> i32 {
+        t.as_i32()
+    }
+
+    pub trait AsI32 {
+        fn as_i32(self) -> i32;
+    }
+
+    impl<'a, T: Copy + AsI32> AsI32 for &'a T {
+        fn as_i32(self) -> i32 {
+            (*self).as_i32()
+        }
+    }
+
+    impl AsI32 for i32 {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for u32 {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for i16 {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for u16 {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for i8 {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for u8 {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for char {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
+
+    impl AsI32 for usize {
+        #[inline]
+        fn as_i32(self) -> i32 {
+            self as i32
+        }
+    }
     extern crate alloc as alloc_crate;
 }
 
@@ -735,8 +986,8 @@ pub(crate) use __export_new_main_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.20.0:new-main:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 1234] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xd3\x08\x01A\x02\x01\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 1364] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xd5\x09\x01A\x02\x01\
 A\x0b\x01B\x16\x04\0\x06output\x03\x01\x01p}\x01i\0\x01@\x01\x05value\x01\0\x02\x04\
 \0\x13[constructor]output\x01\x03\x01h\0\x01@\x02\x04self\x04\x0dfunction-names\0\
 \x02\x04\0\x12[method]output.map\x01\x05\x01k\x01\x01@\x01\x04self\x04\0\x06\x04\
@@ -757,7 +1008,10 @@ m/pulumi-provider-random-interface@0.1.0\x05\x02\x01B\x0f\x02\x03\x02\x01\x01\x0
 alue\x03\x04\0\x1afunction-invocation-result\x03\0\x07\x01p\x05\x01@\x01\x06sour\
 ces\0\x09\x04\0\x0dget-functions\x01\x0a\x01p\x08\x01@\x01\x07results\x0b\x01\0\x04\
 \0\x0dset-functions\x01\x0c\x03\x015component:pulumi-wasm/function-reverse-callb\
-ack@0.1.0\x05\x03\x01B\x02\x01@\x01\x07messages\x01\0\x04\0\x03log\x01\0\x03\x01\
+ack@0.1.0\x05\x03\x01B\x0a\x01m\x05\x05TRACE\x05DEBUG\x04INFO\x04WARN\x05ERROR\x04\
+\0\x05level\x03\0\0\x01ks\x01ky\x01o\x02ss\x01p\x04\x01r\x07\x05level\x01\x06tar\
+gets\x04argss\x0bmodule-path\x02\x04file\x02\x04line\x03\x0akey-values\x05\x04\0\
+\x07content\x03\0\x06\x01@\x01\x07content\x07\x01\0\x04\0\x03log\x01\x08\x03\x01\
 \x1fcomponent:pulumi-wasm/log@0.1.0\x05\x04\x01B\x02\x01@\0\x01\0\x04\0\x04main\x01\
 \0\x04\x01'component:pulumi-wasm/pulumi-main@0.1.0\x05\x05\x04\x01$component:pul\
 umi-wasm/new-main@0.1.0\x04\0\x0b\x0e\x01\0\x08new-main\x03\0\0\0G\x09producers\x01\

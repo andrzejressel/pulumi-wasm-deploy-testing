@@ -8,11 +8,13 @@ use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::ops::DerefMut;
 use std::rc::Rc;
-use tonic::async_trait;
 use wasmtime::component::{Component, Instance, Linker, ResourceTable};
 use wasmtime::Store;
 use wasmtime_wasi::preview2::{WasiCtx, WasiCtxBuilder, WasiView};
 use std::io::prelude::*;
+use async_trait::async_trait;
+use log::Log;
+use regex::Regex;
 
 pub struct Pulumi {
     plugin: Main,
@@ -50,18 +52,35 @@ impl server::component::pulumi_wasm::external_world::Host for MyState {
     }
 }
 
+fn extract_file_name(path: &String) -> String {
+    let file_name_regex: Regex = Regex::new(r"^.*src\\(.*)").unwrap();
+    file_name_regex.captures(path).unwrap().get(1).unwrap().as_str().to_string()
+}
+
 #[async_trait]
 impl crate::pulumi::server::component::pulumi_wasm::log::Host for MyState {
-    async fn log(&mut self, message: String) -> wasmtime::Result<()> {
-        let mut file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .append(true)
-            .open("my-file")
-            .unwrap();
+    async fn log(&mut self, content: crate::pulumi::server::component::pulumi_wasm::log::Content) -> wasmtime::Result<()> {
+        let normalized_file_name = content.file.map(|s| extract_file_name(&s));
 
-        writeln!(file, "{:?}", message)?;
-        // println!("{}", message);
+        log::logger().log(&log::Record::builder()
+            .metadata(log::Metadata::builder()
+                .level(match content.level {
+                    crate::pulumi::server::component::pulumi_wasm::log::Level::Trace => log::Level::Trace,
+                    crate::pulumi::server::component::pulumi_wasm::log::Level::Debug => log::Level::Debug,
+                    crate::pulumi::server::component::pulumi_wasm::log::Level::Info => log::Level::Info,
+                    crate::pulumi::server::component::pulumi_wasm::log::Level::Error => log::Level::Error,
+                    crate::pulumi::server::component::pulumi_wasm::log::Level::Warn => log::Level::Warn,
+                })
+                .target(&content.target)
+                .build()
+            )
+            .args(format_args!("{}", content.args))
+            .module_path(content.module_path.as_deref())
+            .file(normalized_file_name.as_deref())
+            .line(content.line)
+            .key_values(&content.key_values.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect::<Vec<(&str, &str)>>())
+            .build());
+
         Ok(())
     }
 }
@@ -168,4 +187,16 @@ impl Pulumi {
 
         Ok(())
     }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::pulumi::extract_file_name;
+
+    #[test]
+    fn should_extract_file_name() {
+        assert_eq!(extract_file_name(&"src\\main.rs".to_string()), "main.rs");
+        assert_eq!(extract_file_name(&"pulumi_wasm\\src\\lib.rs".to_string()), "lib.rs");
+    }
+
 }

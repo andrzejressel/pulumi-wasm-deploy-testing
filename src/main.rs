@@ -6,6 +6,7 @@ use clap::{arg, Args, Parser, Subcommand};
 use log4rs::append::file::FileAppender;
 use log4rs::Config;
 use log4rs::config::{Appender, Root};
+use log4rs::encode::json::JsonEncoder;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -38,6 +39,8 @@ async fn main() -> Result<(), Error> {
     println!("Hello, world!");
 
     let logfile = FileAppender::builder()
+        // .encoder(Box::new(log4rs::encode::pattern::PatternEncoder::new("{h({d(%Y-%m-%d %H:%M:%S)} - [{l}] [{M}] [{f}:{L}] {m}{n})}")))
+        .encoder(Box::new(JsonEncoder::new()))
         .build("output.log")
         .unwrap();
 
@@ -56,27 +59,10 @@ async fn main() -> Result<(), Error> {
 
     let _pulumi_engine_url = std::env::var("PULUMI_ENGINE")?;
     let pulumi_monitor_url = std::env::var("PULUMI_MONITOR")?;
-    // println!("{pulumi_engine_url}");
 
-    // simple_logger::SimpleLogger::new().env().init().unwrap();
-
-
-    // Result::Err(Error::msg(format!("{:?}", std::env::vars().collect::<Vec<_>>())))?;
-
-    // let pulumi_logger = PulumiLogger {
-    //     engine_url: pulumi_engine_url.clone(),
-    // };
-
-    // pulumi_logger.init()?;
-
-    // debug!("Hello, world!");
     info!("INFO LOG");
     warn!("WARN LOG");
     error!("ERROR LOG");
-    // info!("Hello, world!");
-    // info!("Hello, world!");
-
-    // Err(anyhow::Error::msg("TEST"))?;
 
     match &args.command {
         Command::Run => {

@@ -30,12 +30,35 @@ world pulumi-provider-random {
     export pulumi-provider-random-interface;
 }
 
+world logger {
+    import log;
+}
+
 world pulumi-rust {
     import output-interface;
 }
 
 interface log {
-    log: func(message: string);
+
+    enum level {
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR
+    }
+
+    record content {
+        level: level,
+        target: string,
+        args: string,
+        module-path: option<string>,
+        file: option<string>,
+        line: option<u32>,
+        key-values: list<tuple<string, string>>
+    }
+
+    log: func(content: content);
 }
 
 interface output-interface {
