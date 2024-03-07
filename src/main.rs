@@ -60,10 +60,6 @@ async fn main() -> Result<(), Error> {
     let _pulumi_engine_url = std::env::var("PULUMI_ENGINE")?;
     let pulumi_monitor_url = std::env::var("PULUMI_MONITOR")?;
 
-    info!("INFO LOG");
-    warn!("WARN LOG");
-    error!("ERROR LOG");
-
     match &args.command {
         Command::Run => {
             let pulumi = Pulumi::create(&args.global_opts.wasm, &Some(pulumi_monitor_url)).await?;

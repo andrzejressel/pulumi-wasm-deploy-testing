@@ -4,7 +4,7 @@ use std::fmt::Formatter;
 use std::ops::Deref;
 use futures::SinkExt;
 use lazy_static::lazy_static;
-use log::{info, log};
+use log::{error, info, log};
 use prost::Message;
 use prost_types::value::Kind;
 use rmpv::{Utf8String, Value};
@@ -162,8 +162,12 @@ impl GuestOutput for Output {
 
     fn get_field(&self, field: String) -> WasmOutput {
         wasm_common::setup_logger();
+
+        info!("Getting field [{field}] from Output [TODO]");
+
         let o = output::map_internal(vec![self.output.clone()], move |v| {
             let v = v[0].clone();
+            info!("Value is [{v}]");
 
             let v = match v {
                 Value::Map(m) => {
@@ -184,6 +188,8 @@ impl GuestOutput for Output {
                 Value::Array(_) => todo!(),
                 Value::Ext(_, _) => todo!(),
             };
+
+            info!("Result is [{v}]");
 
             v
         });
@@ -263,15 +269,18 @@ impl function_reverse_callback::Guest for Component {
 }
 
 fn messagepack_to_protoc(v: &Value) -> prost_types::Value {
-    match v {
+    info!("Converting value [{v}] to protoc value");
+    let result = match v {
         Value::Integer(i) => prost_types::Value {
             kind: Option::from(prost_types::value::Kind::NumberValue(i.as_f64().unwrap())),
         },
         _ => {
-            eprintln!("Cannot convert [{v}]");
+            error!("Cannot convert [{v}]");
             todo!("Cannot convert [{v}]")
         }
-    }
+    };
+    info!("Result: [{result:?}]");
+    result
 }
 
 impl register_interface::Guest for Component {
@@ -283,6 +292,8 @@ impl register_interface::Guest for Component {
 
         let new_output = output::map_internal(values, move |v| {
 
+            info!("Converting values [{v:?}] with names [{names:?}]");
+
             let pairs = names.iter().zip(v.iter()).map(|(name, value)| {
                 let v = messagepack_to_protoc(value);
                 (name.clone(), v)
@@ -291,6 +302,8 @@ impl register_interface::Guest for Component {
             let object = prost_types::Struct {
                 fields: BTreeMap::from_iter(pairs)
             };
+
+            info!("Resulting object: [{object:?}]");
 
             let request = grpc::RegisterResourceRequest {
                 r#type: request.type_.clone(),
@@ -332,12 +345,12 @@ impl register_interface::Guest for Component {
 
             let result_vec = external_world::register_resource(vec_request.as_slice());
 
-            let result = grpc::RegisterResourceResponse::decode(&mut result_vec.as_slice()).unwrap();
+            let response = grpc::RegisterResourceResponse::decode(&mut result_vec.as_slice()).unwrap();
 
-            info!("Result: {result:?}");
+            info!("Response: [{response:?}]");
 
             let result = if (!is_in_preview()) {
-                let result = result.object.unwrap().fields.get("result").unwrap().clone().kind.unwrap();
+                let result = response.object.unwrap().fields.get("result").unwrap().clone().kind.unwrap();
 
                 match result {
                     Kind::NullValue(_) => todo!(),

@@ -52,16 +52,9 @@ impl server::component::pulumi_wasm::external_world::Host for MyState {
     }
 }
 
-fn extract_file_name(path: &String) -> String {
-    let file_name_regex: Regex = Regex::new(r"^.*src\\(.*)").unwrap();
-    file_name_regex.captures(path).unwrap().get(1).unwrap().as_str().to_string()
-}
-
 #[async_trait]
 impl crate::pulumi::server::component::pulumi_wasm::log::Host for MyState {
     async fn log(&mut self, content: crate::pulumi::server::component::pulumi_wasm::log::Content) -> wasmtime::Result<()> {
-        let normalized_file_name = content.file.map(|s| extract_file_name(&s));
-
         log::logger().log(&log::Record::builder()
             .metadata(log::Metadata::builder()
                 .level(match content.level {
@@ -76,7 +69,7 @@ impl crate::pulumi::server::component::pulumi_wasm::log::Host for MyState {
             )
             .args(format_args!("{}", content.args))
             .module_path(content.module_path.as_deref())
-            .file(normalized_file_name.as_deref())
+            .file(content.file.as_deref())
             .line(content.line)
             .key_values(&content.key_values.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect::<Vec<(&str, &str)>>())
             .build());
@@ -187,16 +180,4 @@ impl Pulumi {
 
         Ok(())
     }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::pulumi::extract_file_name;
-
-    #[test]
-    fn should_extract_file_name() {
-        assert_eq!(extract_file_name(&"src\\main.rs".to_string()), "main.rs");
-        assert_eq!(extract_file_name(&"pulumi_wasm\\src\\lib.rs".to_string()), "lib.rs");
-    }
-
 }
