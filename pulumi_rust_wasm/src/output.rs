@@ -1,6 +1,8 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use crate::bindings::component::pulumi_wasm::output_interface;
 use uuid::Uuid;
+use log::{info};
 
 pub struct Output<T> {
     phantom: PhantomData<T>,
@@ -40,14 +42,18 @@ impl<T> Output<T> {
     pub fn map<B, F>(&self, f: F) -> Output<B>
     where
         F: Fn(T) -> B + Send + 'static,
-        T: serde::de::DeserializeOwned,
-        B: serde::Serialize,
+        T: serde::de::DeserializeOwned + Debug,
+        B: serde::Serialize + Debug,
     {
+
         let f = move |arg: Vec<u8>| {
             let arg = arg.clone();
-            let argument = rmp_serde::decode::from_slice(&arg).unwrap();
+            let argument = rmp_serde::decode::from_slice(&arg)?;   // .map_err(|e| format!("{e}")).map_err(|e| anyhow!(e))?;
+            info!("Argument: {:?}", argument);
             let result = f(argument);
-            rmp_serde::to_vec(&result).unwrap()
+            info!("Result: {:?}", result);
+            let result = rmp_serde::to_vec(&result)?;
+            Ok(result)
         };
 
         let uuid = Uuid::now_v7().to_string();

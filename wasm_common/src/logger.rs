@@ -43,7 +43,6 @@ impl Log for Logger {
     }
 
     fn flush(&self) {
-        todo!()
     }
 }
 
@@ -69,8 +68,6 @@ impl<'kvs> VisitSource<'kvs> for HashMapPrinter {
 
 fn source_to_map(s: &dyn Source) -> HashMap<String, String> {
     let mut printer = HashMapPrinter::new();
-
     s.visit(&mut printer).unwrap();
-
     printer.map
 }

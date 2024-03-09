@@ -1,6 +1,6 @@
 // Copyright 2022, Pulumi Corporation.  All rights reserved.
 
-// The implementation is heavily based on pulumi-language-java.
+// The implementation is heavily based on basom one.
 
 package main
 

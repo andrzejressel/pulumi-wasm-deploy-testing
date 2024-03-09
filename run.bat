@@ -17,6 +17,8 @@ echo F|xcopy /b /v /y ".\target\wasm32-wasi\debug\pulumi_rust_wasm.wasm" ".\targ
 @REM
 wasm-tools compose -o target/wasm32-wasi/debug/composed1.wasm target/wasm32-wasi/debug/pulumi-wasm-main.wasm -d target/wasm32-wasi/debug/pulumi-wasm-random.wasm || exit /b 1
 wasm-tools compose -o target/wasm32-wasi/debug/composed2.wasm target/wasm32-wasi/debug/composed1.wasm -d target/wasm32-wasi/debug/pulumi-wasm.wasm || exit /b 1
+cargo run -- compile --wasm target/wasm32-wasi/debug/composed2.wasm --output target/wasm32-wasi/debug/composed2.cwasm || exit /b 1
+wasmtime compile -D debug-info=y,coredump=y,address-map=y -o target/wasm32-wasi/debug/composed2.cwasm target/wasm32-wasi/debug/composed2.wasm || exit /b 1
 @REM
 @REM cargo build -p pulumi_entrypoint || exit /b
 @REM

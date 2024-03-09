@@ -1,6 +1,6 @@
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use anyhow::Error;
-use log::info;
+use std::fmt::format;
+use anyhow::{Context, Error};
+use log::{error, info};
 use pulumi_rust_wasm::HASHMAP;
 use crate::bindings::exports::component::pulumi_wasm::pulumi_main::Guest;
 
@@ -20,30 +20,28 @@ impl Guest for Component {
     fn main() {
         wasm_common::setup_logger();
 
-        let length: Output<i32> = Output::new(&4).map(|i: i32| i * 2);
+        let length: Output<i32> = Output::new(&1).map(|i: i32| i * 3);
 
         let v = create_random_string(RandomStringArgs {
-            name: "test123",
+            name: "test1234",
             length,
         });
 
-        let new_length = v.map(|s| s.len() as i32);
-
-        let v = create_random_string(RandomStringArgs {
-            name: "test123_2",
-            length: new_length,
-        });
+        // let new_length = v.map(|s| s.len() as i32);
+        //
+        // let v = create_random_string(RandomStringArgs {
+        //     name: "test123_2",
+        //     length: new_length,
+        // });
 
         run_loop().unwrap();
 
         info!("{}", describe_outputs());
 
         if non_done_exists() {
-            eprintln!("Non done exists");
+            error!("Non done exists");
             panic!("Non done exists");
         }
-
-        // describe_outputs()
     }
 }
 
@@ -70,7 +68,7 @@ fn run_all_function(
 
     let mut functions_map = HASHMAP.lock().unwrap();
 
-    let mapped: Vec<_> = functions
+    let mapped: Result<Vec<_>, _> = functions
         .iter()
         .map(
             |FunctionInvocationRequest {
@@ -78,16 +76,32 @@ fn run_all_function(
                  function_id,
                  value,
              }| {
-                let f = functions_map.get(function_id).unwrap();
-                FunctionInvocationResult {
+                info!("Invoking function [{function_id}] with value [{value:?}]");
+                let v = rmpv::decode::read_value(&mut value.clone().as_slice())?;
+                info!("Invoking function [{function_id}] with value [{v:?}]");
+                let f = functions_map.get(function_id).context(format!("Function with id {function_id} not found"))?;
+                Ok(FunctionInvocationResult {
                     id,
-                    value: f(value.to_vec()),
-                }
+                    value: f(value.to_vec())?,
+                })
             },
         )
+        .into_iter()
         .collect();
 
+    // mapped
+
+    let mapped = match mapped {
+        Ok(mapped) => mapped,
+        Err(e) => {
+            error!("Failed to invoke functions due to [{e}]");
+            return Err(e);
+        }
+    };
+
+    info!("Setting functions");
     set_functions(&*mapped);
+    info!("run_all_function completed");
 
     Ok(true)
 }

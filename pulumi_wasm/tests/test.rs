@@ -56,8 +56,8 @@ impl server::component::pulumi_wasm::external_world::Host for MyState {
 
 
 impl log::Host for MyState {
-    fn log(&mut self, s: String) -> std::result::Result<(), anyhow::Error> {
-        println!("{}", s);
+    fn log(&mut self, s: log::Content) -> std::result::Result<(), anyhow::Error> {
+        println!("{:?}", s);
         Ok(())
     }
 }

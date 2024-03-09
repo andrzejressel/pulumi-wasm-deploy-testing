@@ -6,6 +6,7 @@ use futures::SinkExt;
 use lazy_static::lazy_static;
 use log::{error, info, log};
 use prost::Message;
+use prost_types::Struct;
 use prost_types::value::Kind;
 use rmpv::{Utf8String, Value};
 use bindings::component::pulumi_wasm::external_world;
@@ -88,7 +89,7 @@ impl output_interface::Guest for Component {
                         }
                     }).collect::<Vec<_>>();
 
-                    if (data.len() == refcells.len()) {
+                    if data.len() == refcells.len() {
                         info!("Map");
                         Some(f(data))
                     } else {
@@ -172,9 +173,9 @@ impl GuestOutput for Output {
             let v = match v {
                 Value::Map(m) => {
                     let key = Value::String(Utf8String::from(field.clone()));
-                    let maybe_value = m.iter().find(|(k, _)| k == &key ).map(|(_, v)| v.clone());//.unwrap_or(Value::Nil)
+                    let maybe_value = m.iter().find(|(k, _)| k == &key).map(|(_, v)| v.clone());//.unwrap_or(Value::Nil)
                     match maybe_value {
-                        None => if (is_in_preview()) { Value::Nil } else { todo!() }
+                        None => if is_in_preview() { Value::Nil } else { todo!() }
                         Some(v) => v
                     }
                 }
@@ -229,10 +230,9 @@ impl function_reverse_callback::Guest for Component {
 
                 match f1 {
                     OutputContent::Mapped(id, s, prev) if s == function_source => {
-                        info!("Found mapped");
                         match &*prev.borrow() {
                             OutputContent::Done(v) => {
-                                info!("Found value");
+                                info!("Found function [{id:?}] with value [{v}]");
                                 let mut vec = vec![];
                                 rmpv::encode::write_value(&mut vec, v).unwrap();
                                 Some(FunctionInvocationRequest {
@@ -244,9 +244,8 @@ impl function_reverse_callback::Guest for Component {
                             OutputContent::Mapped(_, _, _)
                             | OutputContent::Func(_, _)
                             | OutputContent::Nothing => {
-                                info!("Value not found");
                                 None
-                            },
+                            }
                         }
                     }
                     OutputContent::Mapped(_, _, _)
@@ -266,6 +265,41 @@ impl function_reverse_callback::Guest for Component {
             borrowed.replace(OutputContent::Done(value));
         }
     }
+}
+
+fn protoc_to_messagepack(value: prost_types::Value) -> Value {
+    info!("Converting protoc value [{value:?}] to messagepack value");
+
+    let kind = match value.kind {
+        None => {
+            error!("Kind is none");
+            unreachable!("Kind is none")
+        }
+        Some(k) => k
+    };
+
+    let result = match kind {
+        Kind::NullValue(_) => todo!(),
+        Kind::NumberValue(n) => Value::F64(n),
+        Kind::StringValue(s) => Value::String(Utf8String::from(s)),
+        Kind::BoolValue(b) => Value::Boolean(b),
+        Kind::StructValue(_) => todo!(),
+        Kind::ListValue(_) => todo!()
+    };
+
+
+    info!("Result: [{result:?}]");
+    result
+}
+
+fn protoc_object_to_messagepack_map(o: prost_types::Struct) -> rmpv::Value {
+    let fields = o.fields.iter().map(|(k, v)| {
+        let k = Value::String(k.clone().into());
+        let v = protoc_to_messagepack(v.clone());
+        (k, v)
+    }).collect::<Vec<_>>();
+
+    Value::Map(fields)
 }
 
 fn messagepack_to_protoc(v: &Value) -> prost_types::Value {
@@ -291,7 +325,6 @@ impl register_interface::Guest for Component {
         let names = request.object.iter().map(|o| o.name.clone()).collect::<Vec<_>>();
 
         let new_output = output::map_internal(values, move |v| {
-
             info!("Converting values [{v:?}] with names [{names:?}]");
 
             let pairs = names.iter().zip(v.iter()).map(|(name, value)| {
@@ -349,29 +382,17 @@ impl register_interface::Guest for Component {
 
             info!("Response: [{response:?}]");
 
-            let result = if (!is_in_preview()) {
-                let result = response.object.unwrap().fields.get("result").unwrap().clone().kind.unwrap();
+            let object = response.object.unwrap_or(Struct::default());
 
-                match result {
-                    Kind::NullValue(_) => todo!(),
-                    Kind::NumberValue(_) => todo!(),
-                    Kind::StringValue(s) => Value::String(s.into()),
-                    Kind::BoolValue(_) => todo!(),
-                    Kind::StructValue(_) => todo!(),
-                    Kind::ListValue(_) => todo!()
-                }
-            } else {
-                Value::Nil
-            };
+            info!("Converting protobuf struct {object:?}");
 
-            // FIXME
-            Value::Map(
-                vec!((Value::from("result"), result))
-            )
+            let result = protoc_object_to_messagepack_map(object);
 
+            info!("Message pack map: [{result:?}]");
+
+            result
         });
 
         WasmOutput::new(Output { output: new_output, tags: vec![] })
-
     }
 }

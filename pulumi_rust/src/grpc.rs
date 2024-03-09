@@ -1,2 +1,2 @@
 use tonic::*;
-tonic::include_proto!("pulumirpc");
+include_proto!("pulumirpc");
