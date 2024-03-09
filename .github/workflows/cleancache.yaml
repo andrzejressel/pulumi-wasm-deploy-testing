@@ -2,8 +2,8 @@ name: Clean cache
 
 on:
   schedule:
-    - '0 0 * * 0'
-  workflow_dispatch: {}
+    - '0 0 * * FRI'
+  workflow_dispatch: { }
 
 permissions:
   actions: write
