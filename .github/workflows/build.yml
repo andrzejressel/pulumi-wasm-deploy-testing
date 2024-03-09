@@ -17,8 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
-      with:
-        prefix-key: "v0-rust-build"
     - uses: actions/setup-go@v5
       with:
         go-version: '^1.22.0'
