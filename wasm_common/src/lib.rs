@@ -1,3 +1,4 @@
+use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 use crate::logger::Logger;
@@ -7,8 +8,8 @@ use log::Log;
 mod bindings;
 mod logger;
 
-static IS_SET : std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-static LOGGER: Logger = logger::Logger {};
+static IS_SET : AtomicBool = AtomicBool::new(false);
+static LOGGER: Logger = Logger {};
 
 pub fn setup_logger() {
     if IS_SET.swap(true, Relaxed) {
