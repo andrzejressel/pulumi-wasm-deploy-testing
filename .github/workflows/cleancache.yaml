@@ -2,7 +2,7 @@ name: Clean cache
 
 on:
   schedule:
-    - cron: '0 0 * * FRI'
+    - cron: '0 0 * * SUN'
   workflow_dispatch: { }
 
 permissions:
