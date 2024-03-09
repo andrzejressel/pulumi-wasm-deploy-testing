@@ -26,7 +26,7 @@ members = [
 ]
 
 [workspace.dependencies]
-anyhow = "1.0.79"
+anyhow = "1.0.80"
 prost = "0.12.3"
 prost-types = "0.12.3"
 uuid = { version = "1.7.0", features = ["v4", "v7"] }
