@@ -27,8 +27,16 @@ use crate::grpc::register_resource_request;
 use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
 bindings::export!(Component with_types_in bindings);
 
+#[allow(clippy::all)]
+#[allow(dead_code)]
+#[allow(unused_variables)]
+#[allow(unused_unsafe)]
 mod bindings;
-mod grpc;
+mod grpc {
+    #![allow(clippy::all)]
+    #![allow(clippy::pedantic)]
+    tonic::include_proto!("pulumirpc");
+}
 mod output;
 
 struct Component;

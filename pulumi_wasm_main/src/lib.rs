@@ -9,6 +9,10 @@ use crate::bindings::component::pulumi_wasm::function_reverse_callback::{Functio
 use crate::bindings::component::pulumi_wasm::output_interface::{combine_outputs, describe_outputs, non_done_exists};
 use crate::random::*;
 
+#[allow(clippy::all)]
+#[allow(dead_code)]
+#[allow(unused_variables)]
+#[allow(unused_unsafe)]
 mod bindings;
 bindings::export!(Component with_types_in bindings);
 
