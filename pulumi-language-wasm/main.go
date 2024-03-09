@@ -1,6 +1,6 @@
 // Copyright 2022, Pulumi Corporation.  All rights reserved.
 
-// The implementation is heavily based on basom one.
+// The implementation is heavily based on besom one.
 
 package main
 
@@ -14,7 +14,6 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -59,17 +58,10 @@ func main() {
 		cmdutil.Exit(fmt.Errorf("could not get the working directory: %w", err))
 	}
 
-	execPath, err := os.Executable()
-	if err != nil {
-		cmdutil.Exit(fmt.Errorf("could not get the path of the executable: %w", err))
-	}
-	bootstrapLibJarPath := filepath.Join(filepath.Dir(execPath), "bootstrap.jar") // TODO: hardocoded jar name
-
 	wasmExecOptions := executors.WasmExecutorOptions{
-		Binary:              binary,
-		UseExecutor:         useExecutor,
-		WD:                  fsys.DirFS(wd),
-		BootstrapLibJarPath: bootstrapLibJarPath,
+		Binary:      binary,
+		UseExecutor: useExecutor,
+		WD:          fsys.DirFS(wd),
 	}
 
 	// Optionally pluck out the engine, so we can do logging, etc.
@@ -449,10 +441,9 @@ func (host *wasmLanguageHost) About(ctx context.Context, _ *emptypb.Empty) (*pul
 	}
 
 	javaExec, err := executors.NewWasmExecutor(executors.WasmExecutorOptions{
-		UseExecutor:         "jar",
-		WD:                  host.execOptions.WD,
-		BootstrapLibJarPath: host.execOptions.BootstrapLibJarPath,
-		Binary:              host.execOptions.Binary,
+		UseExecutor: "jar",
+		WD:          host.execOptions.WD,
+		Binary:      host.execOptions.Binary,
 	})
 	if err != nil {
 		return nil, err

@@ -40,10 +40,6 @@ type WasmExecutorOptions struct {
 	// Current working directory. Abstract to enable testing.
 	WD fsys.ParentFS
 
-	// The absolute path to the bootstrap library jar
-	// which should be shipped together with the main language host binary
-	BootstrapLibJarPath string
-
 	// The value of `runtime.options.binary` setting from
 	// `Pulumi.yaml`. Optional.
 	Binary string
@@ -62,12 +58,13 @@ type wasmExecutorFactory interface {
 func NewWasmExecutor(opts WasmExecutorOptions) (*WasmExecutor, error) {
 	e, err := combineWasmExecutorFactories(
 		&windows{},
+		&unix{},
 	).NewWasmExecutor(opts)
 	if err != nil {
 		return nil, err
 	}
 	if e == nil {
-		return nil, fmt.Errorf("failed to configure executor, tried: entrypoint.bat")
+		return nil, fmt.Errorf("failed to configure executor, tried: entrypoint.bat, entrypoint.sh")
 	}
 	return e, nil
 }

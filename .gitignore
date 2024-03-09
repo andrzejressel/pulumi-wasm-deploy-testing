@@ -15,12 +15,8 @@ devenv.local.nix
 
 /target
 
-.obsidian
-
 /composed1.wat
 /composed2.wat
-/my-file
-/pulumi-language-wasm/pulumi-language-wasm.exe
 
 .idea/
 

@@ -23,10 +23,10 @@ func (s windows) NewWasmExecutor(opts WasmExecutorOptions) (*WasmExecutor, error
 	if err != nil {
 		return nil, err
 	}
-	return s.newWasmCliExecutor(cmd, opts.BootstrapLibJarPath)
+	return s.newWasmCliExecutor(cmd)
 }
 
-func (windows) newWasmCliExecutor(script string, bootstrapLibJarPath string) (*WasmExecutor, error) {
+func (windows) newWasmCliExecutor(script string) (*WasmExecutor, error) {
 	return &WasmExecutor{
 		Name:        script,
 		Cmd:         "cmd",
