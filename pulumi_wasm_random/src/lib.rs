@@ -2,6 +2,10 @@ use log::info;
 use crate::bindings::component::pulumi_wasm::register_interface::{ObjectField, register, RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::pulumi_provider_random_interface::{Guest, RandomStringArgs, RandomStringResult};
 
+#[allow(clippy::all)]
+#[allow(dead_code)]
+#[allow(unused_variables)]
+#[allow(unused_unsafe)]
 mod bindings;
 bindings::export!(Component with_types_in bindings);
 
@@ -17,7 +21,7 @@ impl Guest for Component {
         let request = RegisterResourceRequest {
             type_: r#type,
             name: args.name,
-            object: vec![ObjectField { name: "length".to_string(), value: &args.length }],
+            object: vec![ObjectField { name: "length".to_string(), value: args.length }],
         };
 
         let o = register(&request);

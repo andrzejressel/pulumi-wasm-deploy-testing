@@ -22,9 +22,9 @@ impl FunctionId {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct FunctionSource(String);
 
-impl Into<String> for FunctionSource {
-    fn into(self) -> String {
-        self.0
+impl From<FunctionSource> for String {
+    fn from(val: FunctionSource) -> Self {
+        val.0
     }
 }
 

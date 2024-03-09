@@ -1,29 +1,29 @@
 use core::fmt::Debug;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap};
 use std::fmt::Formatter;
 use std::ops::Deref;
-use futures::SinkExt;
-use lazy_static::lazy_static;
-use log::{error, info, log};
+
+
+use log::{error, info};
 use prost::Message;
 use prost_types::Struct;
 use prost_types::value::Kind;
 use rmpv::{Utf8String, Value};
 use bindings::component::pulumi_wasm::external_world;
 use crate::bindings::component::pulumi_wasm::external_world::is_in_preview;
-use crate::bindings::component::pulumi_wasm::log::log;
+
 
 use crate::bindings::exports::component::pulumi_wasm::function_reverse_callback::{
     FunctionInvocationRequest, FunctionInvocationResult,
 };
 use crate::bindings::exports::component::pulumi_wasm::output_interface::Output as WasmOutput;
-use crate::bindings::exports::component::pulumi_wasm::output_interface::OutputBorrow as WasmOutputBorrow;
+
 use crate::bindings::exports::component::pulumi_wasm::output_interface::{GuestOutput};
-use crate::bindings::exports::component::pulumi_wasm::register_interface::{ObjectField, RegisterResourceRequest};
+use crate::bindings::exports::component::pulumi_wasm::register_interface::{RegisterResourceRequest};
 use crate::bindings::exports::component::pulumi_wasm::{
     function_reverse_callback, output_interface, register_interface,
 };
-use crate::grpc::register_resource_request;
+
 use crate::output::{access_map, FunctionId, FunctionSource, OutputContent};
 bindings::export!(Component with_types_in bindings);
 

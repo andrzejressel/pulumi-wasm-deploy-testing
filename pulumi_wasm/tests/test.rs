@@ -2,7 +2,6 @@ use crate::server::component::pulumi_wasm::log;
 use crate::server::exports::component::pulumi_wasm::function_reverse_callback::FunctionInvocationRequest;
 use crate::server::PulumiWasm;
 use anyhow::{Error, Ok};
-use serde::{Deserialize};
 use std::collections::HashMap;
 use std::string::String;
 use wasmtime::component::{Component, Linker, ResourceTable};
@@ -11,7 +10,6 @@ use wasmtime_wasi::preview2::WasiCtx;
 use wasmtime_wasi::preview2::WasiCtxBuilder;
 use wasmtime_wasi::preview2::WasiView;
 use std::borrow::BorrowMut;
-use std::panic;
 
 mod server {
     wasmtime::component::bindgen!({
@@ -143,7 +141,7 @@ fn should_return_value_of_handled_mapped_value() -> Result<(), Error> {
         .output()
         .call_map(&mut store, output1, function_name)?;
 
-    let _ = run_loop(&mut store, &plugin)?;
+    run_loop(&mut store, &plugin)?;
 
     let output2_value = plugin
         .component_pulumi_wasm_output_interface()
@@ -196,7 +194,7 @@ fn should_panic_when_getting_nonexisting_field_not_during_preview() -> Result<()
         .output()
         .call_constructor(&mut store, rmp_serde::to_vec(&HashMap::from([("key", "value")])).unwrap().as_slice())?;
 
-    let output2 = plugin
+    let _output2 = plugin
         .component_pulumi_wasm_output_interface()
         .output()
         .call_get_field(&mut store, output1, "nonexisting")?;

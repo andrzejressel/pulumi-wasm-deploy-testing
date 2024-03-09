@@ -89,7 +89,7 @@ async fn main() -> Result<(), Error> {
             pulumi.start().await?;
         }
         Command::Compile { wasm, output } => {
-            let compiled = Pulumi::compile(&wasm)?;
+            let compiled = Pulumi::compile(wasm)?;
             std::fs::write(output, compiled)?;
         }
         Command::Plugins { .. } => todo!()
