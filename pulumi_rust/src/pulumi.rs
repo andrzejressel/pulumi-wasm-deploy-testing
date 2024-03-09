@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::io::prelude::*;
 use std::ops::DerefMut;
 use std::rc::Rc;
 
@@ -184,7 +183,7 @@ impl Pulumi {
 
         let component = Component::from_file(&engine, pulumi_wasm_file)?;
 
-        Ok(component.serialize()?)
+        component.serialize()
     }
 
     pub async fn start(&self) -> Result<(), Error> {

@@ -1,4 +1,3 @@
-use std::fmt::format;
 use anyhow::{Context, Error};
 use log::{error, info};
 use pulumi_rust_wasm::HASHMAP;
@@ -26,7 +25,7 @@ impl Guest for Component {
 
         let length: Output<i32> = Output::new(&1).map(|i: i32| i * 3);
 
-        let v = create_random_string(RandomStringArgs {
+        let _v = create_random_string(RandomStringArgs {
             name: "test1234",
             length,
         });
@@ -70,7 +69,7 @@ fn run_all_function(
 
     info!("Functions are not empty");
 
-    let mut functions_map = HASHMAP.lock().unwrap();
+    let functions_map = HASHMAP.lock().unwrap();
 
     let mapped: Result<Vec<_>, _> = functions
         .iter()
@@ -90,7 +89,6 @@ fn run_all_function(
                 })
             },
         )
-        .into_iter()
         .collect();
 
     // mapped
@@ -104,7 +102,7 @@ fn run_all_function(
     };
 
     info!("Setting functions");
-    set_functions(&*mapped);
+    set_functions(&mapped);
     info!("run_all_function completed");
 
     Ok(true)

@@ -2,9 +2,11 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 use crate::logger::Logger;
-use log::kv::{Source, VisitSource};
-use log::Log;
 
+#[allow(clippy::all)]
+#[allow(dead_code)]
+#[allow(unused_variables)]
+#[allow(unused_unsafe)]
 mod bindings;
 mod logger;
 
