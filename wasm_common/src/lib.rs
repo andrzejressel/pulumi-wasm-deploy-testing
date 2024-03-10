@@ -2,11 +2,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 use crate::logger::Logger;
-// #[allow(clippy::all)]
-// #[allow(dead_code)]
-// #[allow(unused_variables)]
-// #[allow(unused_unsafe)]
-// mod bindings;
 
 #[allow(clippy::all)]
 #[allow(dead_code)]
@@ -18,12 +13,6 @@ mod bindings {
         world: "logger",
         path: "../wits/world.wit"
     });
-
-
-
-
-    // pub mod export as export_2;
-
 }
 
 pub use bindings::*;
