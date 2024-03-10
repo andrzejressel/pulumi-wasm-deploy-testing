@@ -7,7 +7,16 @@ use crate::logger::Logger;
 #[allow(dead_code)]
 #[allow(unused_variables)]
 #[allow(unused_unsafe)]
-mod bindings;
+mod bindings {
+    wit_bindgen::generate!({
+        // the name of the world in the `*.wit` input file
+        world: "logger",
+        path: "../wits/world.wit"
+    });
+}
+
+pub use bindings::*;
+
 mod logger;
 
 static IS_SET : AtomicBool = AtomicBool::new(false);

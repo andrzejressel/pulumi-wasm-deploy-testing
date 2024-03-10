@@ -1,4 +1,3 @@
-cargo component build -p wasm_common || exit /b 1
 cargo component build -p pulumi_wasm || exit /b 1
 cargo component build -p pulumi_wasm_provider_random || exit /b 1
 cargo component build -p pulumi_wasm_example_simple || exit /b 1

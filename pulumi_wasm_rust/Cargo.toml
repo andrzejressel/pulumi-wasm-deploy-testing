@@ -1,17 +1,13 @@
 [package]
-name = "pulumi_rust_wasm"
-version = "0.1.0"
-edition = "2021"
+name = "pulumi_wasm_rust"
+version.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[lib]
-crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 uuid.workspace = true
 bitflags.workspace = true
-wit-bindgen-rt.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 rmp-serde.workspace = true
@@ -19,10 +15,7 @@ serde_json.workspace = true
 futures.workspace = true
 lazy_static.workspace = true
 log.workspace = true
-
-[package.metadata.component]
-package = "component:pulumi-rust-wasm"
-
-[package.metadata.component.target]
-path = "../wits/world.wit"
-world = "pulumi-rust"
+wit-bindgen.workspace = true
+pulumi_wasm_rust_macro.workspace = true
+wasm_common.workspace = true
+rmpv.workspace = true

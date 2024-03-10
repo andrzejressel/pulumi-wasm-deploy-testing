@@ -1,9 +1,9 @@
-use pulumi_rust_wasm::output::Output;
+use pulumi_wasm_rust::output::Output;
 use crate::bindings::component::pulumi_wasm::{output_interface, pulumi_provider_random_interface};
 
 pub struct RandomStringArgs<'a> {
-    pub(crate) name: &'a str,
-    pub(crate) length: Output<i32>,
+    pub name: &'a str,
+    pub length: Output<i32>,
 }
 
 pub fn create_random_string(
