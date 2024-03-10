@@ -4,15 +4,26 @@ world pulumi-wasm {
     export output-interface;
     export register-interface;
     export function-reverse-callback;
-    import log;
 
+    import log;
     import external-world;
+}
+
+world pulumi-rust {
+    export register-interface;
+    export function-reverse-callback;
+    import output-interface;
 }
 
 world main {
     export pulumi-main;
     import external-world;
     import log;
+}
+
+world pulumi-wasm-rust {
+    import output-interface;
+    import function-reverse-callback;
 }
 
 world new-main {
@@ -23,6 +34,10 @@ world new-main {
     export pulumi-main;
 }
 
+world pulumi-main-world {
+    export pulumi-main;
+}
+
 world pulumi-provider-random {
     import output-interface;
     import register-interface;
@@ -30,12 +45,18 @@ world pulumi-provider-random {
     export pulumi-provider-random-interface;
 }
 
+world pulumi-provider-random-client {
+    import output-interface;
+    import register-interface;
+    import pulumi-provider-random-interface;
+}
+
 world logger {
     import log;
 }
 
-world pulumi-rust {
-    import output-interface;
+world pulumi-rust-macro {
+    import external-world;
 }
 
 interface log {

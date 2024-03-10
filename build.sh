@@ -2,7 +2,6 @@
 
 set -e
 
-cargo component build -p wasm_common
 cargo component build -p pulumi_wasm
 cargo component build -p pulumi_wasm_provider_random
 cargo component build -p pulumi_wasm_example_simple

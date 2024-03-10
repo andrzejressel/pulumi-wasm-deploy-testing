@@ -1,11 +1,18 @@
 [package]
-name = "wasm_common"
+name = "pulumi_wasm_rust_macro"
 version.workspace = true
 edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+proc-macro = true
+
+
 [dependencies]
 log.workspace = true
 uuid.workspace = true
 wit-bindgen.workspace = true
+syn = {version = "*", features = ["full"]}
+quote="*"
+proc-macro2="*"

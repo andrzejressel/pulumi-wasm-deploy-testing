@@ -1,21 +1,24 @@
 [package]
 name = "pulumi-wasm-parent"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
 
 [workspace]
 members = [
     "pulumi_wasm_runner",
     "pulumi_wasm",
     "providers/pulumi_wasm_provider_random",
+    "pulumi_wasm_rust_macro",
     "pulumi_wasm_rust",
     "wasm_common",
     "examples/simple"
 ]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
 
 [workspace.dependencies]
 anyhow = "1.0.80"
@@ -26,6 +29,7 @@ futures = "0.3.30"
 lazy_static = "1.4.0"
 once_cell = "1.19.0"
 bitflags = "2.4.2"
+wit-bindgen = "0.21.0"
 wit-bindgen-rt = "0.21.0"
 rmp = "0.8.12"
 rmp-serde = "1.1.2"
@@ -44,3 +48,7 @@ log4rs = "1.3.0"
 tokio = { version = "1.36.0", features = ["sync", "macros", "io-util", "rt", "time"] }
 clap = { version = "4.5.2", features = ["derive"] }
 regex = "1.10.3"
+pulumi_wasm_rust = { path = "pulumi_wasm_rust" }
+pulumi_wasm_rust_macro = { path = "pulumi_wasm_rust_macro" }
+wasm_common = { path = "wasm_common" }
+pulumi_wasm_provider_random_rust = { path = "providers/pulumi_wasm_provider_random_rust" }

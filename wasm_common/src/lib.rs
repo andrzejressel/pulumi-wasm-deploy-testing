@@ -2,12 +2,32 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 
 use crate::logger::Logger;
+// #[allow(clippy::all)]
+// #[allow(dead_code)]
+// #[allow(unused_variables)]
+// #[allow(unused_unsafe)]
+// mod bindings;
 
 #[allow(clippy::all)]
 #[allow(dead_code)]
 #[allow(unused_variables)]
 #[allow(unused_unsafe)]
-mod bindings;
+mod bindings {
+    wit_bindgen::generate!({
+        // the name of the world in the `*.wit` input file
+        world: "logger",
+        path: "../wits/world.wit"
+    });
+
+
+
+
+    // pub mod export as export_2;
+
+}
+
+pub use bindings::*;
+
 mod logger;
 
 static IS_SET : AtomicBool = AtomicBool::new(false);
