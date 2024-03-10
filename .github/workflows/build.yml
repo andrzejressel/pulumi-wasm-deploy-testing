@@ -37,3 +37,5 @@ jobs:
         ./build.sh
     - name: Run tests
       run: cargo test --all --verbose
+    - name: Ensure no files have changed
+      run: git diff --exit-code
