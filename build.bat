@@ -26,7 +26,6 @@ wasm-tools compose -o target/wasm32-wasi/debug/composed2.wasm target/wasm32-wasi
 @REM wasm-tools component wit target/wasm32-wasi/debug/composed2.wasm
 @REM
 wasm-tools component wit target/wasm32-wasi/debug/composed2.wasm || exit /b 1
-wasm-tools print target/wasm32-wasi/debug/pulumi-wasm-example-simple.wasm > pulumi-wasm-example-simple.wat || exit /b 1
 wasm-tools print target/wasm32-wasi/debug/composed1.wasm > composed1.wat || exit /b 1
 wasm-tools print target/wasm32-wasi/debug/composed2.wasm > composed2.wat || exit /b 1
 

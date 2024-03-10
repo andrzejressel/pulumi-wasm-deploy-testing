@@ -8,11 +8,7 @@ edition.workspace = true
 [lib]
 proc-macro = true
 
-
 [dependencies]
-log.workspace = true
-uuid.workspace = true
-wit-bindgen.workspace = true
-syn = {version = "*", features = ["full"]}
-quote="*"
-proc-macro2="*"
+syn.workspace = true
+quote.workspace = true
+proc-macro2.workspace = true
