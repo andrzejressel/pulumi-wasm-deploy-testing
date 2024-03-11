@@ -1636,7 +1636,7 @@ dependencies = [
  "wasm_common",
  "wasmtime",
  "wasmtime-wasi",
- "wit-bindgen-rt 0.21.0",
+ "wit-bindgen-rt",
 ]
 
 [[package]]
@@ -1663,7 +1663,7 @@ dependencies = [
  "wasm_common",
  "wasmtime",
  "wasmtime-wasi",
- "wit-bindgen-rt 0.21.0",
+ "wit-bindgen-rt",
 ]
 
 [[package]]
@@ -1688,7 +1688,7 @@ dependencies = [
  "wasm_common",
  "wasmtime",
  "wasmtime-wasi",
- "wit-bindgen-rt 0.21.0",
+ "wit-bindgen-rt",
 ]
 
 [[package]]
@@ -3345,7 +3345,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "288f992ea30e6b5c531b52cdd5f3be81c148554b09ea416f058d16556ba92c27"
 dependencies = [
  "bitflags 2.4.2",
- "wit-bindgen-rt 0.22.0",
+ "wit-bindgen-rt",
  "wit-bindgen-rust-macro",
 ]
 
@@ -3358,12 +3358,6 @@ dependencies = [
  "anyhow",
  "wit-parser 0.201.0",
 ]
-
-[[package]]
-name = "wit-bindgen-rt"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "026d24a27f6712541fa534f2954bd9e0eb66172f033c2157c0f31d106255c497"
 
 [[package]]
 name = "wit-bindgen-rt"
