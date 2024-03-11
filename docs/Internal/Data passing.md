@@ -1,9 +1,9 @@
 
 ```mermaid
 stateDiagram-v2
-	UserInput --> Pulumi_provider_wasm: WIT
+	User --> Pulumi_provider_wasm: WIT
 	Pulumi_provider_wasm --> Pulumi_wasm: MessagePack
-	Pulumi_wasm --> PulumiProper: Protobuf
+	Pulumi_wasm --> Pulumi: Protobuf
 ```
 
 
