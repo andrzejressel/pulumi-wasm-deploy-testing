@@ -33,6 +33,9 @@ jobs:
         version: "25.3"
         repo-token: ${{ github.token }}
     - run: protoc --version
+    - run: brew install pulumi
+      if: runner.os == 'macOS'
+    - run: pulumi version
 
     - name: Build language plugin (Windows)
       if: runner.os == 'Windows'
