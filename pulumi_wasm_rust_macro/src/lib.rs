@@ -14,9 +14,8 @@ pub fn pulumi_main(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let expanded = quote! {
 
-        fn #fn_name() #fn_output {
+        fn #fn_name() #fn_output
             #fn_block
-        }
 
         #[export_name = "component:pulumi-wasm/pulumi-main@0.1.0#main"]
         unsafe extern "C" fn __exported() {

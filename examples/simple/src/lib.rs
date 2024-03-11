@@ -9,14 +9,10 @@ use pulumi_wasm_rust::pulumi_main;
 
 #[pulumi_main]
 fn test_main() -> Result<(), Error> {
-    wasm_common::setup_logger();
-
     let length: Output<i32> = Output::new(&12).map(|i: i32| i * 3);
-
     let _ = create_random_string(RandomStringArgs {
         name: "test",
         length,
     });
-
     Ok(())
 }
