@@ -50,7 +50,7 @@ clap = { version = "4.5.2", features = ["derive"] }
 regex = "1.10.3"
 syn = { version = "2.0.52", features = ["full"] }
 quote = "1.0.35"
-proc-macro2 = "1.0.78"
+proc-macro2 = "1.0.79"
 pulumi_wasm_rust = { path = "pulumi_wasm_rust" }
 pulumi_wasm_rust_macro = { path = "pulumi_wasm_rust_macro" }
 wasm_common = { path = "wasm_common" }
