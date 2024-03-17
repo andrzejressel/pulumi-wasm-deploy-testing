@@ -48,7 +48,7 @@ log4rs = "1.3.0"
 tokio = { version = "1.36.0", features = ["sync", "macros", "io-util", "rt", "time"] }
 clap = { version = "4.5.3", features = ["derive"] }
 regex = "1.10.3"
-syn = { version = "2.0.52", features = ["full"] }
+syn = { version = "2.0.53", features = ["full"] }
 quote = "1.0.35"
 proc-macro2 = "1.0.79"
 pulumi_wasm_rust = { path = "pulumi_wasm_rust" }
