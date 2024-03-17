@@ -46,11 +46,11 @@ jobs:
       run: ./build.sh
       working-directory: pulumi-language-wasm
 
-    - name: Install required cargo packages
-      run: |
-        cargo install cargo-component@0.9.0 --locked || cargo-component --version
-        cargo install wasm-tools@1.0.57 --locked || wasm-tools --version
-        ./build.sh
+    - name: Install cargo-component
+      run: cargo install cargo-component@0.9.0 --locked || cargo-component --version
+
+    - name: Install wasm-tools
+      run: cargo install wasm-tools@1.201.0 --locked || wasm-tools --version
 
     - name: Build WASM support (Windows)
       if: runner.os == 'Windows'
