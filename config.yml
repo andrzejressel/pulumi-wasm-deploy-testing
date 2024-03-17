@@ -1,0 +1,14 @@
+#instantiations:
+#  component:pulumi-wasm/pulumi-provider-random-interface@0.1.0:
+#    dependency: pulumi-wasm-provider-random
+#definitions:
+#  - 'target\wasm32-wasi\debug\pulumi-wasm-provider-random.wasm'
+#  - 'target\wasm32-wasi\debug\pulumi-wasm.wasm'
+
+dependencies:
+  component:pulumi-wasm/pulumi-provider-random-interface@0.1.0: 'target\wasm32-wasi\debug\pulumi-wasm-provider-random.wasm'
+#  component:pulumi-wasm/register-interface@0.1.0: 'target\wasm32-wasi\debug\pulumi-wasm.wasm'
+#  component:pulumi-wasm/output-interface@0.1.0: 'target\wasm32-wasi\debug\pulumi-wasm.wasm'
+#  component:pulumi-wasm/function-reverse-callback@0.1.0: 'target\wasm32-wasi\debug\pulumi-wasm.wasm'
+#definitions:
+#  - 'target\wasm32-wasi\debug\pulumi-wasm.wasm'

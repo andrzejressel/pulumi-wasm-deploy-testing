@@ -3,6 +3,9 @@ name = "pulumi_wasm_rust"
 version.workspace = true
 edition.workspace = true
 
+[package.metadata.pulumi]
+related_crate = "pulumi_wasm"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
