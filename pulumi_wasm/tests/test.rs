@@ -267,7 +267,6 @@ fn run_all_function(
     plugin: &PulumiWasm,
 ) -> Result<bool, Error> {
     use crate::server::exports::component::pulumi_wasm::function_reverse_callback::FunctionInvocationResult;
-    use std::borrow::BorrowMut;
 
     let functions = plugin
         .component_pulumi_wasm_function_reverse_callback()

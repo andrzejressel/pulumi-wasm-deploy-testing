@@ -4,7 +4,6 @@ use std::rc::Rc;
 
 use anyhow::Error;
 use async_trait::async_trait;
-use log::Log;
 use prost::Message;
 use wasmtime::component::{Component, Instance, Linker, ResourceTable};
 use wasmtime::Store;

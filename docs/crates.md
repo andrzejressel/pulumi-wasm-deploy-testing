@@ -32,6 +32,10 @@ after [#5](https://github.com/andrzejressel/pulumi-wasm/issues/5) generated.
 Rust library that provides a high-level and typesafe API for `Pulumi WASM Provider Random` WASM component.
 Currently handwritten - after [#5](https://github.com/andrzejressel/pulumi-wasm/issues/5) generated.
 
+### cargo pulumi
+
+Cargo subcommands that compile and combine Pulumi WASM components into a single WASM file.
+
 ### examples/simple
 
 Currently the only example. It's a simple Pulumi program that uses `Pulumi WASM Provider Random Rust` to generate random numbers.

@@ -121,10 +121,10 @@ interface pulumi-provider-random-interface {
 
     use output-interface.{output};
 
-    variant either-u32 {
-        literal(option<u32>),
-        res(option<borrow<output>>),
-    }
+//    variant either-u32 {
+//        literal(option<u32>),
+//        res(option<borrow<output>>),
+//    }
 
     record random-string-args {
         name: string,

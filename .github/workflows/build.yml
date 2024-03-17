@@ -54,12 +54,10 @@ jobs:
 
     - name: Build WASM support (Windows)
       if: runner.os == 'Windows'
-      run: |
-        ./build.bat
+      run: ./build.bat
     - name: Build WASM support (Unix)
       if: runner.os == 'Linux' || runner.os == 'macOS'
-      run: |
-        ./build.sh
+      run: ./build.sh
 
     - name: Run tests
       run: cargo test --all --verbose
