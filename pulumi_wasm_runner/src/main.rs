@@ -81,8 +81,8 @@ async fn main() -> Result<(), Error> {
                     eprintln!("Cannot specify both wasm and cwasm");
                     std::process::exit(1);
                 }
-                (Some(wasm), None) => WasmFile::WASM(wasm.clone()),
-                (None, Some(cwasm)) => WasmFile::CWASM(cwasm.clone()),
+                (Some(wasm), None) => WasmFile::Wasm(wasm.clone()),
+                (None, Some(cwasm)) => WasmFile::CompiledWasm(cwasm.clone()),
                 (None, None) => {
                     eprintln!("Must specify either wasm or cwasm");
                     std::process::exit(1);
@@ -92,7 +92,7 @@ async fn main() -> Result<(), Error> {
             let _pulumi_engine_url = std::env::var("PULUMI_ENGINE")?;
             let pulumi_monitor_url = std::env::var("PULUMI_MONITOR")?;
 
-            let pulumi = Pulumi::create(&wasm, &Some(pulumi_monitor_url)).await?;
+            let mut pulumi = Pulumi::create(&wasm, &Some(pulumi_monitor_url)).await?;
             pulumi.start().await?;
         }
         Command::Compile { wasm, output } => {
