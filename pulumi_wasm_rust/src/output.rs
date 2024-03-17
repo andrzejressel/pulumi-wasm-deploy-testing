@@ -17,10 +17,19 @@ impl <T: serde::Serialize> From<T> for Output<T> {
 
 impl<T> Output<T> {
 
+    ///
+    /// # Safety
+    ///
+    /// Returns handle to inner output representation. Only needed in provider glue code.
     pub unsafe fn get_inner(&self) -> &output_interface::Output {
         &self.future
     }
 
+    ///
+    /// # Safety
+    ///
+    /// Underlying output type must the same as `F` and this Output will take ownership of the handle.
+    /// This means that the handle must not be deallocated by something else.
     pub unsafe fn new_from_handle<F: serde::Serialize>(handle: u32) -> Output<F> {
         let output = output_interface::Output::from_handle(handle);
         Output {

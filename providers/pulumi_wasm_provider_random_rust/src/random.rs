@@ -23,7 +23,6 @@ fn random_to_domain_mapper<F: serde::Serialize>(random: pulumi_provider_random_i
     unsafe {
         let inner = random.take_handle();
         Output::<F>::new_from_handle(inner)
-        // output_interface::Output::from_handle(inner)
     }
 }
 
