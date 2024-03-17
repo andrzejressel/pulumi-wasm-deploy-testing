@@ -11,9 +11,6 @@ impl FunctionId {
     pub(crate) fn from_string(s: &String) -> FunctionId {
         FunctionId(s.to_string())
     }
-    pub(crate) fn from_str(s: &str) -> FunctionId {
-        FunctionId(s.to_string())
-    }
     pub(crate) fn get(&self) -> String {
         self.0.clone()
     }
@@ -53,11 +50,6 @@ pub(crate) fn access_map() -> &'static mut Vec<OutputContentRefCell> {
     }
 
     // unsafe { &mut GLOBAL_MAP }
-}
-
-struct Output {
-    content: OutputContent,
-    tags: Vec<String>,
 }
 
 pub(crate) enum OutputContent {

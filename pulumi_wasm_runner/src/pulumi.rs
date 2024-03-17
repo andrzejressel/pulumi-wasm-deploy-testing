@@ -1,7 +1,3 @@
-use std::cell::RefCell;
-use std::ops::DerefMut;
-use std::rc::Rc;
-
 use anyhow::Error;
 use async_trait::async_trait;
 use prost::Message;
@@ -16,7 +12,7 @@ use crate::pulumi::server::Main;
 pub struct Pulumi {
     plugin: Main,
     _instance: Instance,
-    store: RefCell<Store<SimplePluginCtx>>,
+    store: Store<SimplePluginCtx>,
 }
 
 pub(crate) mod server {
@@ -101,15 +97,15 @@ impl WasiView for SimplePluginCtx {
 }
 
 pub enum WasmFile {
-    WASM(String),
-    CWASM(String),
+    Wasm(String),
+    CompiledWasm(String),
 }
 
 impl Pulumi {
     pub async fn create(
         pulumi_wasm_file: &WasmFile,
         pulumi_monitor_url: &Option<String>,
-    ) -> Result<Rc<Pulumi>, Error> {
+    ) -> Result<Pulumi, Error> {
         let mut engine_config = wasmtime::Config::new();
         engine_config.wasm_component_model(true);
         engine_config.async_support(true);
@@ -145,8 +141,8 @@ impl Pulumi {
         );
 
         let component = match pulumi_wasm_file {
-            WasmFile::WASM(file) => Component::from_file(&engine, file),
-            WasmFile::CWASM(file) => {
+            WasmFile::Wasm(file) => Component::from_file(&engine, file),
+            WasmFile::CompiledWasm(file) => {
                 unsafe {
                     Component::deserialize_file(&engine, file)
                 }
@@ -155,13 +151,11 @@ impl Pulumi {
 
         let (plugin, instance) = Main::instantiate_async(&mut store, &component, &linker).await?;
 
-        let store = RefCell::new(store);
-
-        Ok(Rc::new(Pulumi {
+        Ok(Pulumi {
             plugin,
             _instance: instance,
             store,
-        }))
+        })
     }
 
     pub fn compile(pulumi_wasm_file: &String) -> Result<Vec<u8>, Error> {
@@ -185,12 +179,10 @@ impl Pulumi {
         component.serialize()
     }
 
-    pub async fn start(&self) -> Result<(), Error> {
-        let mut binding = self.store.borrow_mut();
-        let store = binding.deref_mut();
+    pub async fn start(&mut self) -> Result<(), Error> {
         self.plugin
             .component_pulumi_wasm_pulumi_main()
-            .call_main(store)
+            .call_main(&mut self.store)
             .await?;
 
         Ok(())

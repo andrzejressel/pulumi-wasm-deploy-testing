@@ -110,8 +110,10 @@ fn run_all_function(
 
 pub mod output;
 
+type Function = Box<dyn Fn(Vec<u8>) -> Result<Vec<u8>, Error> + Send>;
+
 lazy_static! {
-    pub static ref HASHMAP: Mutex<HashMap<String, Box<dyn Fn(Vec<u8>) -> Result<Vec<u8>, anyhow::Error> + Send>>> = {
+    pub static ref HASHMAP: Mutex<HashMap<String, Function>> = {
         let m = HashMap::new();
         Mutex::new(m)
     };
