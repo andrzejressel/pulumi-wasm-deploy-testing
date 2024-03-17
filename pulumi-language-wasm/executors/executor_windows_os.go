@@ -17,7 +17,7 @@ func (s windows) NewWasmExecutor(opts WasmExecutorOptions) (*WasmExecutor, error
 	}
 	probePaths := []string{opts.UseExecutor}
 	if opts.UseExecutor == "" {
-		probePaths = []string{".\\entrypoint.bat"}
+		probePaths = []string{".\\entrypoint.ps1"}
 	}
 	cmd, err := fsys.LookPath(opts.WD, probePaths...)
 	if err != nil {
@@ -29,10 +29,10 @@ func (s windows) NewWasmExecutor(opts WasmExecutorOptions) (*WasmExecutor, error
 func (windows) newWasmCliExecutor(script string) (*WasmExecutor, error) {
 	return &WasmExecutor{
 		Name:        script,
-		Cmd:         "cmd",
-		BuildArgs:   []string{"/c", script, "build"},
-		RunArgs:     []string{"/c", script, "run"},
-		PluginArgs:  []string{"/c", script, "plugin"},
-		VersionArgs: []string{"/c", script, "version"},
+		Cmd:         "powershell",
+		BuildArgs:   []string{"-executionpolicy", "bypass", "-File", script, "build"},
+		RunArgs:     []string{"-executionpolicy", "bypass", "-File", script, "run"},
+		PluginArgs:  []string{"-File", script, "plugin"},
+		VersionArgs: []string{"-File", script, "version"},
 	}, nil
 }

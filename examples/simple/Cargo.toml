@@ -30,5 +30,5 @@ wasm_common.workspace = true
 pulumi_wasm_provider_random_rust.workspace = true
 
 [dev-dependencies]
-wasmtime.workspace = true
-wasmtime-wasi.workspace = true
+assert_cmd.workspace = true
+predicates.workspace = true

@@ -40,9 +40,9 @@ impl FunctionSource {
 static mut GLOBAL_MAP: Option<Vec<OutputContentRefCell>> = None;
 
 pub(crate) fn access_map() -> &'static mut Vec<OutputContentRefCell> {
-    let maybeMap = unsafe { &mut GLOBAL_MAP };
+    let maybe_map = unsafe { &mut GLOBAL_MAP };
 
-    match maybeMap {
+    match maybe_map {
         None => {
             unsafe {
                 GLOBAL_MAP = Some(Vec::new());
