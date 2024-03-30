@@ -1,6 +1,6 @@
 use anyhow::Error;
-use pulumi_wasm_provider_random_rust::random::{create_random_string, RandomStringArgs};
-use pulumi_wasm_rust::output::Output;
+use pulumi_wasm_random::source::random_string::*;
+use pulumi_wasm_rust::Output;
 use pulumi_wasm_rust::{add_export, pulumi_main};
 
 // Causes compilation errors
@@ -10,9 +10,20 @@ use pulumi_wasm_rust::{add_export, pulumi_main};
 #[pulumi_main]
 fn test_main() -> Result<(), Error> {
     let length: Output<i32> = Output::new(&12).map(|i: i32| i * 3);
-    let random_string = create_random_string(RandomStringArgs {
+    let random_string = random_string(RandomStringArgs {
         name: "test",
+        keepers: None.into(),
         length,
+        lower: None.into(),
+        min_lower: None.into(),
+        min_numeric: None.into(),
+        min_special: None.into(),
+        min_upper: None.into(),
+        number: None.into(),
+        numeric: None.into(),
+        override_special: None.into(),
+        special: None.into(),
+        upper: None.into(),
     });
     add_export("result", random_string.result);
     Ok(())
