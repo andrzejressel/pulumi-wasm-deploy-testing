@@ -1,5 +1,6 @@
-use crate::model::{ElementId, Type};
+use crate::model::ElementId;
 use crate::output::replace_multiple_dashes;
+use crate::output::rust::convert_type;
 use convert_case::{Case, Casing};
 use handlebars::Handlebars;
 use serde::Serialize;
@@ -26,7 +27,6 @@ struct OutputProperty {
 #[derive(Serialize)]
 struct Interface {
     name: String,
-    r#type: String,
     input_properties: Vec<InputProperty>,
     output_properties: Vec<OutputProperty>,
     struct_name: String,
@@ -54,7 +54,6 @@ fn convert_model(package: &crate::model::Package) -> Package {
                     .clone()
                     .from_case(Case::UpperCamel)
                     .to_case(Case::Snake),
-                r#type: element_id.raw.clone(),
                 wit_name: create_valid_wit_element_id(element_id),
                 input_properties: resource
                     .input_properties
@@ -78,21 +77,6 @@ fn convert_model(package: &crate::model::Package) -> Package {
                     .collect(),
             })
             .collect(),
-    }
-}
-
-fn convert_type(type_or_ref: &Type) -> String {
-    match type_or_ref {
-        Type::Boolean => "bool".into(),
-        Type::Integer => "i32".into(),
-        Type::Number => "f64".into(),
-        Type::String => "String".into(),
-        Type::Array(type_) => format!("Vec<{}>", convert_type(type_)), // "Vec<{}>
-        Type::Object(type_) => {
-            format!("std::collections::HashMap<String, {}>", convert_type(type_))
-        }
-        Type::Ref(_) => "Ref".into(),
-        Type::Option(type_) => format!("Option<{}>", convert_type(type_)),
     }
 }
 

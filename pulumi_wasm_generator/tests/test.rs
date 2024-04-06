@@ -13,9 +13,15 @@ fn random() -> Result<()> {
 }
 
 #[test]
-#[ignore]
 fn command() -> Result<()> {
     let provider_name = "command";
+    run_test(provider_name)?;
+    Ok(())
+}
+
+#[test]
+fn docker() -> Result<()> {
+    let provider_name = "docker";
     run_test(provider_name)?;
     Ok(())
 }

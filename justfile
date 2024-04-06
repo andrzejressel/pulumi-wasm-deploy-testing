@@ -14,8 +14,13 @@ install-requirements:
     cargo install wasm-tools@1.202.0 --locked || wasm-tools --version
 
 build-wasm-components:
-    cargo component build -p pulumi_wasm -p pulumi_wasm_random_provider -p pulumi_wasm_example_simple
+    cargo component build -p pulumi_wasm \
+                          -p pulumi_wasm_random_provider \
+                          -p pulumi_wasm_docker_provider \
+                          -p pulumi_wasm_example_simple \
+                          -p pulumi_wasm_example_docker
     cargo run -p cargo-pulumi -- -p pulumi_wasm_example_simple
+    cargo run -p cargo-pulumi -- -p pulumi_wasm_example_docker
 
 check:
     cargo fmt --all -- --check
@@ -33,8 +38,11 @@ regenerate-providers:
     cargo run -p cargo-pulumi-gen -- gen-provider --remove true --schema providers/random.json --output providers/pulumi_wasm_provider_random
     cargo run -p cargo-pulumi-gen -- gen-rust     --remove true --schema providers/random.json --output providers/pulumi_wasm_provider_random_rust
 
+    cargo run -p cargo-pulumi-gen -- gen-provider --remove true --schema providers/docker.json --output providers/pulumi_wasm_provider_docker
+    cargo run -p cargo-pulumi-gen -- gen-rust     --remove true --schema providers/docker.json --output providers/pulumi_wasm_provider_docker_rust
+
 test:
-    cargo nextest run --all
+    cargo nextest run --workspace
 
 docs:
     docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material

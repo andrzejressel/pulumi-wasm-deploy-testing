@@ -19,6 +19,12 @@ impl<T: serde::Serialize> From<T> for Output<T> {
     }
 }
 
+impl<T: serde::Serialize> From<T> for Output<Option<T>> {
+    fn from(value: T) -> Self {
+        Output::new(&Some(&value))
+    }
+}
+
 type Function = Box<dyn Fn(Vec<u8>) -> Result<Vec<u8>, Error> + Send>;
 
 lazy_static! {
@@ -51,7 +57,7 @@ impl<T> Output<T> {
     }
 
     pub fn new<F: serde::Serialize>(value: &F) -> Self {
-        let binding = rmp_serde::to_vec(value).unwrap();
+        let binding = rmp_serde::to_vec_named(value).unwrap();
         let arg = binding.as_slice();
         let resource = output_interface::Output::new(arg);
         Output {
@@ -72,7 +78,7 @@ impl<T> Output<T> {
             info!("Argument: {:?}", argument);
             let result = f(argument);
             info!("Result: {:?}", result);
-            let result = rmp_serde::to_vec(&result)?;
+            let result = rmp_serde::to_vec_named(&result)?;
             Ok(result)
         };
 
