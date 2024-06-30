@@ -10,6 +10,11 @@ WASM_TOOLS_VERSION := "1.202.0"
 
 build: build-language-plugin regenerate-providers install-requirements build-wasm-components fmt
 
+# https://stackoverflow.com/questions/74524817/why-is-anyhow-not-working-in-the-stable-version
+fix-issues:
+    cargo component check --workspace
+    cargo check --workspace
+
 build-language-plugin:
     cd pulumi-language-wasm && just
 
@@ -20,6 +25,7 @@ install-requirements:
     cargo install wasm-tools@{{WASM_TOOLS_VERSION}} --locked || wasm-tools --version
 
 build-wasm-components:
+    cargo build -p pulumi_wasm_runner
     cargo component build -p pulumi_wasm \
                           -p pulumi_wasm_example_simple \
                           -p pulumi_wasm_example_docker
@@ -28,8 +34,9 @@ build-wasm-components:
       -p pulumi_wasm_docker_provider \
       -p pulumi_wasm_random_provider \
     # DO NOT EDIT - BUILD-WASM-COMPONENTS - END
-    cargo run -p cargo-pulumi -- -p pulumi_wasm_example_simple
+    cargo run -p cargo-pulumi -- -p pulumi_wasm_example_dependencies
     cargo run -p cargo-pulumi -- -p pulumi_wasm_example_docker
+    cargo run -p cargo-pulumi -- -p pulumi_wasm_example_simple
 
 check:
     cargo fmt --all -- --check
