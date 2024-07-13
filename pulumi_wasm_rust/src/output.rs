@@ -21,7 +21,7 @@ impl<T: serde::Serialize> From<T> for Output<T> {
 
 impl<T: serde::Serialize> From<T> for Output<Option<T>> {
     fn from(value: T) -> Self {
-        Output::new(&Some(&value))
+        Output::new(&Some(value))
     }
 }
 
@@ -56,15 +56,6 @@ impl<T> Output<T> {
         }
     }
 
-    pub fn new<F: serde::Serialize>(value: &F) -> Self {
-        let binding = serde_json::to_string(value).unwrap();
-        let resource = output_interface::Output::new(binding.as_str());
-        Output {
-            phantom: PhantomData,
-            future: resource,
-        }
-    }
-
     pub fn map<B, F>(&self, f: F) -> Output<B>
     where
         F: Fn(T) -> B + Send + 'static,
@@ -96,3 +87,16 @@ impl<T> Output<T> {
         crate::bindings::component::pulumi_wasm::stack_interface::add_export(name, &self.future);
     }
 }
+
+impl<T: serde::Serialize> Output<T> {
+    pub fn new(value: &T) -> Self {
+        let binding = serde_json::to_string(&value).unwrap();
+        let resource = output_interface::Output::new(binding.as_str());
+        Output {
+            phantom: PhantomData,
+            future: resource,
+        }
+    }
+}
+
+include!(concat!(env!("OUT_DIR"), "/outputs.rs"));
