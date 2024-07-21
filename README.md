@@ -9,7 +9,7 @@ Currently, supports very simple code for very simple providers (no complex objec
 #### Language plugin
 
 ```
-pulumi plugin install language wasm "0.0.0-SHORTSHA1" --server github://api.github.com/andrzejressel/pulumi-wasm
+pulumi plugin install language wasm "0.0.0-NIGHTLY-SHORTSHA1" --server github://api.github.com/andrzejressel/pulumi-wasm
 ```
 
 ### Acknowledgements
