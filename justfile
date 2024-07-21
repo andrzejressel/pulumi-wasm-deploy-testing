@@ -3,6 +3,8 @@ set windows-shell := ["pwsh.exe", "-c"]
 NEXTEST_VERSION := "0.9.72"
 # renovate: datasource=crate depName=cargo-component packageName=cargo-component
 CARGO_COMPONENT_VERSION := "0.14.0"
+# renovate: datasource=crate depName=sd packageName=sd
+SD_VERSION := "1.0.0"
 
 @default: build test
 
@@ -21,8 +23,9 @@ package-language-plugin VERSION:
 
 install-requirements:
     rustup component add rustfmt
-    cargo binstall --no-confirm cargo-nextest@{{NEXTEST_VERSION}} --force || cargo-nextest --version
-    cargo binstall --no-confirm cargo-component@{{CARGO_COMPONENT_VERSION}} --force || cargo-component --version
+    cargo binstall --no-confirm cargo-nextest@{{NEXTEST_VERSION}}
+    cargo binstall --no-confirm cargo-component@{{CARGO_COMPONENT_VERSION}}
+    cargo binstall --no-confirm sd@{{SD_VERSION}}
 
 # Compiling everything together causes linking issues
 build-wasm-components:
@@ -79,3 +82,9 @@ test:
 
 docs:
     docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
+
+update-version NEW_VERSION:
+    sd "0.0.0-DEV" "{{NEW_VERSION}}" "pulumi_wasm_wit/wit/world.wit" "pulumi_wasm_rust_macro/src/lib.rs" \
+    "providers/pulumi_wasm_provider_docker_rust/Cargo.toml" \
+    "providers/pulumi_wasm_provider_random_rust/Cargo.toml" \
+    "Cargo.toml"
