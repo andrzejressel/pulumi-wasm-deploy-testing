@@ -30,7 +30,7 @@ jobs:
       RUST_BACKTRACE: "full"
 
     steps:
-      - run: ls -al
+      - run: ls
 #    - uses: actions/checkout@v4
 #      with:
 #        submodules: true
