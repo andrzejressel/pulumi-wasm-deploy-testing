@@ -18,6 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Write release version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo Version: $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -45,8 +50,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2.0.8
         with:
-          name: 0.0.0-NIGHTLY-${{ steps.short-sha.outputs.sha }}
-          tag_name: v0.0.0-NIGHTLY-${{ steps.short-sha.outputs.sha }}
+          name: ${{ vars.VERSION }}
+          tag_name: ${{ vars.GITHUB_REF_NAME }}
           fail_on_unmatched_files: true
           prerelease: true
           body: ""
@@ -143,8 +148,8 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2.0.8
         with:
-          name: $VERSION
-          tag_name: ${GITHUB_REF_NAME}
+          name: ${{ vars.VERSION }}
+          tag_name: ${{ vars.GITHUB_REF_NAME }}
           fail_on_unmatched_files: true
           prerelease: true
           body: ""
