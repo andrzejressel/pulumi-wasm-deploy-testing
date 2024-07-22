@@ -90,7 +90,7 @@ jobs:
             pulumi_wasm_generator_lib/tests/output/pulumi_tests/mini-awsnative/
 
       - name: Build
-        run: just build
+        run: just build-wasm-components
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -129,6 +129,7 @@ jobs:
       - uses: extractions/setup-just@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@v5
         with:
           go-version: '^1.22.0'
           cache-dependency-path: "**/go.sum"
