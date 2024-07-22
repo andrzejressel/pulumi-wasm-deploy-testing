@@ -30,6 +30,8 @@ jobs:
       RUST_BACKTRACE: "full"
 
     steps:
+    - run: git config --system core.longpaths true
+      if: runner.os == 'Windows'
     - uses: actions/checkout@v4
       with:
         submodules: true
