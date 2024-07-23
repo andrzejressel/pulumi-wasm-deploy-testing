@@ -1,0 +1,138 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "full"
+
+permissions:
+  contents: write
+
+jobs:
+
+  deploy_rust_registry:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: extractions/setup-just@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "25.3"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: protoc --version
+
+      - name: Publish to registry
+        run: just publish
+        env:
+          CARGO_REGISTRIES_CLOUDSMITH_TOKEN: ${{ secrets.CLOUDSMITH_API_KEY }}
+  
+
+  deploy_wasm_files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Write release version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo Version: $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: extractions/setup-just@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: cargo-bins/cargo-binstall@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install requirements
+        run: just install-requirements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "25.3"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: protoc --version
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: build
+          save-if: false
+          workspaces: |
+            ./
+            pulumi_wasm_generator_lib/tests/output/pulumi_providers/command/
+            pulumi_wasm_generator_lib/tests/output/pulumi_providers/docker/
+            pulumi_wasm_generator_lib/tests/output/pulumi_providers/random/
+            pulumi_wasm_generator_lib/tests/output/pulumi_tests/cyclic-types/
+            pulumi_wasm_generator_lib/tests/output/pulumi_tests/mini-awsnative/
+
+      - name: Build
+        run: just build-wasm-components
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "timings_rust_wasm_${{ runner.os }}"
+          path: |
+            target/cargo-timings/cargo-timing-*.html
+            pulumi_wasm_generator_lib/tests/**/target/cargo-timings/cargo-timing-*.html
+      - name: Release
+        uses: softprops/action-gh-release@v2.0.8
+        with:
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.GITHUB_REF_NAME }}
+          fail_on_unmatched_files: true
+          prerelease: true
+          body: ""
+          files: |
+            target/wasm32-wasip1/debug/*_provider.wasm
+            target/wasm32-wasip1/debug/pulumi_wasm.wasm  
+
+  deploy_language_plugin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Write release version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo Version: $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: extractions/setup-just@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '^1.22.0'
+          cache-dependency-path: "**/go.sum"
+      - run: go version
+
+      - name: Package language plugin
+        if: runner.os == 'Linux'
+        run: just package-language-plugin "$VERSION"
+
+      - name: Release
+        uses: softprops/action-gh-release@v2.0.8
+        with:
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.GITHUB_REF_NAME }}
+          fail_on_unmatched_files: true
+          prerelease: true
+          body: ""
+          files: |
+            pulumi-language-wasm/*.tar.gz
